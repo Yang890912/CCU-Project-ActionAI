@@ -12,7 +12,7 @@ class captureVediotoImage():
         train_images = []
         cap = cv2.VideoCapture(filename)
         tool = general_mulitpose_model()
-        f = open("./trans_to_train/test.csv", "w", newline='') #測試用 到時候寫入檔案用追加方式(a+)
+        f = open("./trans_to_train/pose_data.csv", "w", newline='') #測試用 到時候寫入檔案用追加方式(a+)
 
         while True:
             ret = cap.grab()

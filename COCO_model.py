@@ -372,7 +372,8 @@ class general_mulitpose_model(object):
         w.writerows(rows)
         f.close()
 
-    # 產生訓練資料csv檔    
+    # 產生訓練資料csv檔 
+    # *******未加入action*******    
     def gen_train_csv(self, dataset, action, file):
         # csv檔header排列...
         # header = ["person", 
@@ -396,7 +397,8 @@ class general_mulitpose_model(object):
         print(dataset)
         w.writerows(dataset)
    
-    # 將圖片集轉成特徵資料 並接上LSTM (然後將預測結果輸出) *******未完成*******
+    # 將圖片集轉成特徵資料 並接上LSTM (然後將預測結果輸出) 
+    # *******未完成*******
     def gen_dataset(self, imageset):
         image_num = np.array(imageset).shape[0]
         person_num = 0  #紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
