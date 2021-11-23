@@ -1,21 +1,26 @@
 import cv2
-from COCO_model import general_mulitpose_model 
 import numpy as np
+import time
 
-class captureVediotoImage():
+from COCO_model import general_mulitpose_model 
+
+class VedioConverter():
     def __init__(self, number=5):
         self.time_F = number
 
-    #一次把整部影片轉成圖片 訓練用            
-    def transform_to_traindata(self, filename):
+    #一次把整部影片轉成圖片 並產生訓練用csv檔            
+    def transform_to_traindata(self, filename, action):
         turn = 1
         train_images = []
-        cap = cv2.VideoCapture(filename)
+        vedio = cv2.VideoCapture(filename)
+        fps = vedio.get(cv2.CAP_PROP_FPS)
         tool = general_mulitpose_model()
-        f = open("./trans_to_train/pose_data.csv", "w", newline='') #測試用 到時候寫入檔案用追加方式(a+)
+        # f_csv = open("./trans_to_train/test.csv", "w", newline='') #測試用 到時候真正寫入檔案用追加方式(a+)
+        f_csv = open("./trans_to_train/pose_data.csv", "a", newline='') #真正寫入檔案
+        print("fps:",fps)
 
         while True:
-            ret = cap.grab()
+            ret = vedio.grab()
             # if frame is read correctly ret is True
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
@@ -24,32 +29,37 @@ class captureVediotoImage():
             #read() = grab() + retrieve()
             #每隔幾幀進行擷取 省略每次都需read()的時間 改用grab + retrieve
             if(turn % self.time_F == 0):    #5
-                ret, frame = cap.retrieve() 
+                ret, frame = vedio.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
                         train_images.append(frame)
-                        dataset = tool.gen_dataset(train_images)
+                        dataset = tool.gen_train_dataset(train_images, action)                   
                         print(np.array(dataset).shape)
+                        print(np.array(dataset))
                         if dataset: #有數據 表示是正常可用的 
-                            tool.gen_train_csv(dataset, 'pull', f)
-
+                            tool.gen_train_csv(dataset, f_csv)  
+                                
+                        turn = 0
                         train_images.clear()
+                        
                     else:
                         train_images.append(frame)
                 else:
-                    print("Can't receive frame (stream end?). Exiting ...")     
+                    print("Can't receive frame (stream end?). Exiting ...") 
+                    break    
             turn = turn + 1
-        f.close()
-        cap.release()   
+        f_csv.close()
+        vedio.release()   
 
-    #把影片每3張圖 做一次預測資料 預測用
+    #把影片每3張圖 做一次預測資料 --預測用
     def transform_and_predict(self, filename):
         turn = 1
         predict_images = []
-        cap = cv2.VideoCapture(filename)
+        vedio = cv2.VideoCapture(filename)
+        
 
         while True:
-            ret = cap.grab()
+            ret = vedio.grab()
             # if frame is read correctly ret is True
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
@@ -59,7 +69,7 @@ class captureVediotoImage():
             # 每隔幾幀進行擷取 省略每次都需read()的時間 改用grab + retrieve
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0):    #5
-                ret, frame = cap.retrieve() 
+                ret, frame = vedio.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
                         predict_images.append(frame)
@@ -74,18 +84,16 @@ class captureVediotoImage():
                     else:
                         predict_images.append(frame)
                 else:
-                    print("Can't receive frame (stream end?). Exiting ...")     
+                    print("Can't receive frame (stream end?). Exiting ...") 
+                    break    
             turn = turn + 1
-        
-            # if cv2.waitKey(1) == ord('q'):
-            #     break
 
-        cap.release()   
+        vedio.release()   
 
 
 if __name__ == '__main__':
-    cvti = captureVediotoImage()
-    cvti.transform_to_traindata("./train_images/vedio_test_2.mp4")
+    vc = VedioConverter()
+    vc.transform_to_traindata("./train_images/Fishing_Training_Video/Produce.mp4", ["test"])
 
     cv2.destroyAllWindows()
 

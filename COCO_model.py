@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
-#from Capturevediotoimage import captureVediotoImage
+
 
 class general_mulitpose_model(object):
     def __init__(self):
@@ -51,6 +51,7 @@ class general_mulitpose_model(object):
 
         return coco_net
 
+
     def getKeypoints(self, probMap, threshold=0.1):
         mapSmooth = cv2.GaussianBlur(probMap, (3, 3), 0, 0)
         mapMask = np.uint8(mapSmooth > threshold)
@@ -70,6 +71,7 @@ class general_mulitpose_model(object):
             keypoints.append(maxLoc + (probMap[maxLoc[1], maxLoc[0]],))
 
         return keypoints
+
 
     def getValidPairs(self, output, detected_keypoints, img_width, img_height):
         valid_pairs = []
@@ -179,7 +181,7 @@ class general_mulitpose_model(object):
 
         return personwiseKeypoints
 
-
+    # 將圖片經過 COCO model 做預測 --字串格式
     def predict(self, inputparam):
         img_cv2 = cv2.imread(inputparam)
         img_width, img_height = img_cv2.shape[1], img_cv2.shape[0]
@@ -231,6 +233,7 @@ class general_mulitpose_model(object):
 
         return personwiseKeypoints, keypoints_list
     
+    # 將圖片經過 COCO model 做預測 --檔案格式
     def predict_v2(self, img_cv2):
         img_width, img_height = img_cv2.shape[1], img_cv2.shape[0]
 
@@ -281,7 +284,7 @@ class general_mulitpose_model(object):
 
         return personwiseKeypoints, keypoints_list
 
-
+    # 可視化 --test
     def vis_pose(self, img_file, personwiseKeypoints, keypoints_list):
         img_cv2 = cv2.imread(img_file)
         for n in range(len(personwiseKeypoints)):
@@ -299,6 +302,7 @@ class general_mulitpose_model(object):
         plt.axis("off")
         plt.show()
     
+    # 將關鍵節點轉換成特徵向量
     def gen_pose(self, personwiseKeypoints, keypoints_list):
         rows = []
         throw = [0,1,12,13,14,15,16]
@@ -327,7 +331,7 @@ class general_mulitpose_model(object):
                 rows[n].append(A[1]-A[0])
         return rows
 
-    # 產生訓練資料csv檔 測試用 
+    # 產生訓練資料csv檔 --test
     def gen_pose_csv(self, personwiseKeypoints, keypoints_list):
         header = ["person", 
                   "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
@@ -372,34 +376,30 @@ class general_mulitpose_model(object):
         w.writerows(rows)
         f.close()
 
-    # 產生訓練資料csv檔 
-    # *******未加入action*******    
-    def gen_train_csv(self, dataset, action, file):
-        # csv檔header排列...
-        # header = ["person", 
-        #           "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
-        #           "x-左手臂", "y-左手臂", "x-左手腕", "y-左手腕", 
-        #           "x-右軀幹", "y-右軀幹", "x-右大腿", "y-右大腿", "x-右小腿", "y-右小腿", 
-        #           "x-左軀幹", "y-左軀幹", "x-左大腿", "y-左大腿", "x-左小腿", "y-左小腿",
-        #           "person", 
-        #           "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
-        #           "x-左手臂", "y-左手臂", "x-左手腕", "y-左手腕", 
-        #           "x-右軀幹", "y-右軀幹", "x-右大腿", "y-右大腿", "x-右小腿", "y-右小腿", 
-        #           "x-左軀幹", "y-左軀幹", "x-左大腿", "y-左大腿", "x-左小腿", "y-左小腿",
-        #           "person", 
-        #           "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
-        #           "x-左手臂", "y-左手臂", "x-左手腕", "y-左手腕", 
-        #           "x-右軀幹", "y-右軀幹", "x-右大腿", "y-右大腿", "x-右小腿", "y-右小腿", 
-        #           "x-左軀幹", "y-左軀幹", "x-左大腿", "y-左大腿", "x-左小腿", "y-左小腿",
-        #           "action"]
-
+    # 產生訓練資料csv檔  
+    def gen_train_csv(self, dataset, file):
+        # csv檔header排列... 表示同1個人3個時間軸的身體特徵
+        # ["person", 
+        # "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
+        # "x-左手臂", "y-左手臂", "x-左手腕", "y-左手腕", 
+        # "x-右軀幹", "y-右軀幹", "x-右大腿", "y-右大腿", "x-右小腿", "y-右小腿", 
+        # "x-左軀幹", "y-左軀幹", "x-左大腿", "y-左大腿", "x-左小腿", "y-左小腿",
+        # "person", 
+        # "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
+        # "x-左手臂", "y-左手臂", "x-左手腕", "y-左手腕", 
+        # "x-右軀幹", "y-右軀幹", "x-右大腿", "y-右大腿", "x-右小腿", "y-右小腿", 
+        # "x-左軀幹", "y-左軀幹", "x-左大腿", "y-左大腿", "x-左小腿", "y-左小腿",
+        # "person", 
+        # "x-右手臂", "y-右手臂", "x-右手腕", "y-右手腕", 
+        # "x-左手臂", "y-左手臂", "x-左手腕", "y-左手腕", 
+        # "x-右軀幹", "y-右軀幹", "x-右大腿", "y-右大腿", "x-右小腿", "y-右小腿", 
+        # "x-左軀幹", "y-左軀幹", "x-左大腿", "y-左大腿", "x-左小腿", "y-左小腿",
+        # "action"]
         w = csv.writer(file)
-        print(dataset)
         w.writerows(dataset)
    
     # 將圖片集轉成特徵資料 並接上LSTM (然後將預測結果輸出) 
-    # *******未完成*******
-    def gen_dataset(self, imageset):
+    def gen_train_dataset(self, imageset, action):
         image_num = np.array(imageset).shape[0]
         person_num = 0  #紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
         min_person = 0 #小於此人數直接不記
@@ -409,12 +409,14 @@ class general_mulitpose_model(object):
         # 3張圖代表3個時間軸 人各自的特徵關係
         for i in range(0, image_num):
             personwiseKeypoints, keypoints_list = self.predict_v2(imageset[i])
+            # self.vis_pose(imageset[i], personwiseKeypoints, keypoints_list)
+            curr_person = personwiseKeypoints.shape[0]
             if(i == 0):
-                if(personwiseKeypoints.shape[0] <= min_person): # 第1張圖小於最少人數 就直接不算了
+                if(curr_person <= min_person): # 第1張圖小於最少人數 就直接不算了
                     return
                 else:
-                    person_num = personwiseKeypoints.shape[0]
-            elif(person_num != personwiseKeypoints.shape[0]):   # 後2張圖人數跟第1張圖不一樣 直接不算 (暫不考慮人數變化的影響，直接忽略一次計算)
+                    person_num = curr_person
+            elif(person_num != curr_person):   # 後2張圖人數跟第1張圖不一樣 直接不算 (暫不考慮人數變化的影響，直接忽略一次計算)
                 return
 
             data = self.gen_pose(personwiseKeypoints, keypoints_list)
@@ -423,7 +425,9 @@ class general_mulitpose_model(object):
             else:
                 for j in range(0, person_num):
                     dataset[j].extend(data[j])
-              
+                    if(i==image_num-1):
+                        dataset[j].extend(action)
+
         # 接著把dataset丟入LSTM做預測 
         # dataset為2維資料 row是每個人 column是特徵的3個時間軸 
         # 因此要轉成3維資料 這邊可以在LSTM的程式碼那邊去做轉換 
@@ -444,16 +448,15 @@ if __name__ == '__main__':
     multipose_model = general_mulitpose_model()
     print("[INFO]Time Taken in Model Loading: {}".format(time.time() - start))
     personwiseKeypoints, keypoints_list = multipose_model.predict(img_file)
-
-    #對照圖
+    # 對照圖
     multipose_model.vis_pose(img_file, 
                              personwiseKeypoints, 
                              keypoints_list)
-    #數據轉換成csv
+    # 數據轉換成csv --test
     multipose_model.gen_pose_csv(personwiseKeypoints, 
                                  keypoints_list)
 
     #print(personwiseKeypoints)
-    print(keypoints_list.shape)
-    print("[INFO]Done.")
+    #print(keypoints_list.shape)
     print("[INFO]Time Taken in Done: {}".format(time.time() - start))
+    print("[INFO]Done.")
