@@ -2,6 +2,7 @@
 #[1] https://www.aiuai.cn/aifarm946.html
 
 import os
+from os.path import dirname, join
 import cv2
 import time
 import numpy as np
@@ -46,8 +47,8 @@ class general_mulitpose_model(object):
 
     #模組提取
     def get_model(self):
-        prototxt = "./model/coco/pose_deploy_linevec.prototxt"
-        caffemodel = "./model/coco/pose_iter_440000.caffemodel"
+        prototxt = join(dirname(__file__), "./model/coco/pose_deploy_linevec.prototxt")
+        caffemodel = join(dirname(__file__), "./model/coco/pose_iter_440000.caffemodel")
         coco_net = cv2.dnn.readNetFromCaffe(prototxt, caffemodel)
         coco_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         coco_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
@@ -183,6 +184,52 @@ class general_mulitpose_model(object):
 
         return personwiseKeypoints
 
+    # 將偵測到的 keypoints 寫到檔案，用於測試
+    def writeKeyPointsToFile(self, keypoints, filename="keypoints.txt"):
+        with open(filename, 'a') as file:
+            file.truncate(0)
+            for keypoint in keypoints:
+                for kp in keypoint:
+                    file.write(''.join(str(kp)))
+                    file.write(',')
+                file.write('\n')
+            file.close()
+
+    # 根據 keypoints 檔案，計算人數
+    def getPeopleCntByKeyPointsFile(self, filename="keypoints.txt"):
+        people_cnt = 0
+        keypoints_cnt = []
+        with open(filename, 'r') as file:
+            for line in file:
+                tmp = []
+                start = line.find("),")
+                while start != -1:
+                    tmp.append(1)
+                    start += 1
+                    start = line.find("),", start)
+
+                keypoints_cnt.append(tmp)
+
+        # find the largest size of row in keypoints_cnt
+        largest_row_cnt = 0
+        for row in keypoints_cnt:
+            if len(row) > largest_row_cnt:
+                largest_row_cnt = len(row)
+
+        # insert 0 to others to fit the array
+        for row in keypoints_cnt:
+            while len(row) != largest_row_cnt:
+                row.append(0)
+
+        # sum up the col, if sum larger than 9(half of the characteristics), 
+        # then someone is detected
+        for col in zip(*keypoints_cnt):
+            cnt = np.sum(col)
+            if cnt >= 9:
+                people_cnt += 1
+
+        return people_cnt
+
     # 將圖片經過 COCO model 做預測 --字串格式
     def predict(self, inputparam):
         img_cv2 = cv2.imread(inputparam)
@@ -206,6 +253,7 @@ class general_mulitpose_model(object):
         output = self.pose_net.forward()
         print("[INFO]Time Taken in Forward pass: {}".format(time.time() - start))
 
+        output_keypoints = []
         detected_keypoints = []
         keypoints_list = np.zeros((0, 3))
         keypoint_id = 0
@@ -214,7 +262,9 @@ class general_mulitpose_model(object):
             probMap = output[0, part, :, :]
             probMap = cv2.resize(probMap, (img_cv2.shape[1], img_cv2.shape[0]))
             keypoints = self.getKeypoints(probMap, threshold)
-            print("Keypoints - {} : {}".format(self.point_names[part], keypoints))
+            # print("Keypoints - {} : {}".format(self.point_names[part], keypoints))
+            output_keypoints.append(keypoints)
+
             keypoints_with_id = []
             for i in range(len(keypoints)):
                 keypoints_with_id.append(keypoints[i] + (keypoint_id,))
@@ -232,6 +282,8 @@ class general_mulitpose_model(object):
             self.getPersonwiseKeypoints(valid_pairs, 
                                         invalid_pairs, 
                                         keypoints_list)
+
+        self.writeKeyPointsToFile(output_keypoints)
 
         return personwiseKeypoints, keypoints_list
     
@@ -283,6 +335,8 @@ class general_mulitpose_model(object):
             self.getPersonwiseKeypoints(valid_pairs, 
                                         invalid_pairs, 
                                         keypoints_list)
+
+        self.writeKeyPointsToFile(output_keypoints)
 
         return personwiseKeypoints, keypoints_list
 
@@ -474,12 +528,10 @@ class general_mulitpose_model(object):
         
         return dataset 
 
-
-
 if __name__ == '__main__':
     print("[INFO]MultiPose estimation.")
     # img_file = "D:/pythonTool/openpose/examples/media/COCO_val2014_000000000192.jpg"
-    img_file = "ABB.jpg"
+    img_file = "./test/test_images/day/front/3.png"
     
     start = time.time()
     multipose_model = general_mulitpose_model()
