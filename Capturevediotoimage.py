@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+import threading
 
 from COCO_model import general_mulitpose_model 
 
@@ -14,9 +15,9 @@ class VedioConverter():
         train_images = []
         vedio = cv2.VideoCapture(filename)
         fps = vedio.get(cv2.CAP_PROP_FPS)
-        tool = general_mulitpose_model()
-        # f_csv = open("./trans_to_train/test.csv", "w", newline='') #測試用 到時候真正寫入檔案用追加方式(a+)
-        f_csv = open("./trans_to_train/pose_data.csv", "a", newline='') #真正寫入檔案
+        tool = general_mulitpose_model()    # coco model
+        f_csv = open("./trans_to_train/test.csv", "w", newline='') #測試用 到時候真正寫入檔案用追加方式(a+)
+        #f_csv = open("./trans_to_train/pose_data.csv", "a", newline='') #真正寫入檔案
         print("fps:",fps)
 
         while True:
@@ -39,7 +40,7 @@ class VedioConverter():
                         if dataset: #有數據 表示是正常可用的 
                             tool.gen_train_csv(dataset, f_csv)  
                                 
-                        turn = 0
+                        turn = 1
                         train_images.clear()
                         
                     else:
@@ -56,7 +57,7 @@ class VedioConverter():
         turn = 1
         predict_images = []
         vedio = cv2.VideoCapture(filename)
-        
+        tool = general_mulitpose_model()
 
         while True:
             ret = vedio.grab()
@@ -75,11 +76,11 @@ class VedioConverter():
                         predict_images.append(frame)
                         # *******未完成*******
                         # add predict code
-                        # 圖片產生關鍵點信息 並判斷人數 人數跟之前一樣>繼續動作 不一樣>continue
                         # 將關鍵點信息 擷取特徵 並存入dataset
                         # ****dataset 拿去做預測***** 
                         # 銜接LSTM ......
                         # *******未完成*******
+                        turn = 1
                         predict_images.clear()
                     else:
                         predict_images.append(frame)
@@ -88,12 +89,14 @@ class VedioConverter():
                     break    
             turn = turn + 1
 
+        # While
+
         vedio.release()   
 
 
 if __name__ == '__main__':
     vc = VedioConverter()
-    vc.transform_to_traindata("./train_images/Fishing_Training_Video/Produce.mp4", ["test"])
+    vc.transform_to_traindata("D:/文件/python_programming/project/train_images/Fishing_Training_Video/Produce_5.mp4", ["test"])
 
     cv2.destroyAllWindows()
 

@@ -14,7 +14,7 @@ class PosePredictor():
     def __init__(self):
         self.window = 3
         self.pose_vec_dim = 20
-        self.list_of_action = ['test','test2']
+        self.list_of_action = ['test','test2']  # 需調整
         self.lbl_dict = {class_name:idx for idx, class_name in enumerate(self.list_of_action)}
 
     def load_lstm_model(self, filename):
@@ -65,6 +65,11 @@ class PosePredictor():
         X_test = X_test.reshape(X_test.shape[0], self.window, self.pose_vec_dim)    # 2維轉3維
         X_train = X_train.reshape(X_train.shape[0], self.window, self.pose_vec_dim)
         return X_train, X_test, y_train, y_test
+
+    def predict(self, dataset, lstm_model):
+        dataset = dataset.reshape(dataset.shape[0], self.window, self.pose_vec_dim)
+        result = lstm_model.predict(dataset)
+        return result
     
 
 if __name__ == '__main__':
@@ -74,4 +79,4 @@ if __name__ == '__main__':
     print(X_train)
     print(y_train)
 
-    predictor.train_lstm_model(model,X_train, y_train, X_test, y_test)
+    predictor.train_lstm_model(model, X_train, y_train, X_test, y_test)
