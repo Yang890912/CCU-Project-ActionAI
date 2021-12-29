@@ -47,8 +47,10 @@ class general_mulitpose_model(object):
 
     #模組提取
     def get_model(self):
-        prototxt = join(dirname(__file__), "./model/coco/pose_deploy_linevec.prototxt")
-        caffemodel = join(dirname(__file__), "./model/coco/pose_iter_440000.caffemodel")
+        # prototxt = join(dirname(__file__), "./model/coco/pose_deploy_linevec.prototxt")
+        # caffemodel = join(dirname(__file__), "./model/coco/pose_iter_440000.caffemodel")
+        prototxt = "./model/coco/pose_deploy_linevec.prototxt"
+        caffemodel = "./model/coco/pose_iter_440000.caffemodel"
         coco_net = cv2.dnn.readNetFromCaffe(prototxt, caffemodel)
         coco_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         coco_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
@@ -336,7 +338,7 @@ class general_mulitpose_model(object):
                                         invalid_pairs, 
                                         keypoints_list)
 
-        self.writeKeyPointsToFile(output_keypoints)
+        # self.writeKeyPointsToFile(output_keypoints)
 
         return personwiseKeypoints, keypoints_list
 
@@ -457,44 +459,8 @@ class general_mulitpose_model(object):
     # 將圖片集轉成特徵資料 並接上LSTM (然後將預測結果輸出) 
     def gen_train_dataset(self, imageset, action):
         image_num = np.array(imageset).shape[0]
-        person_num = 0  #紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
-        min_person = 0 #小於此人數直接不記
-        dataset = []
-
-        # 依序讀取圖 並轉成關鍵點資訊 2維資料 人*(特徵*時間) 預設時間片段為3
-        # 3張圖代表3個時間軸 人各自的特徵關係
-        for i in range(0, image_num):
-            personwiseKeypoints, keypoints_list = self.predict_v2(imageset[i])
-            self.vis_pose(imageset[i], personwiseKeypoints, keypoints_list)
-            curr_person = personwiseKeypoints.shape[0]
-            if(i == 0):
-                if(curr_person <= min_person): # 第1張圖小於最少人數 就直接不算了
-                    return
-                else:
-                    person_num = curr_person
-            elif(person_num != curr_person):   # 後2張圖人數跟第1張圖不一樣 直接不算 (暫不考慮人數變化的影響，直接忽略一次計算)
-                return
-
-            data = self.gen_pose(personwiseKeypoints, keypoints_list)
-            if(i == 0):
-                dataset = data
-            else:
-                for j in range(0, person_num):
-                    dataset[j].extend(data[j])
-                    if(i==image_num-1):
-                        dataset[j].extend(action)
-
-        # 接著把dataset丟入LSTM做預測 
-        # dataset為2維資料 row是每個人 column是特徵的3個時間軸 
-        # 因此要轉成3維資料 這邊可以在LSTM的程式碼那邊去做轉換 
-        # 轉成 人*時間軸*特徵 可用 reshape實作 
-        
-        return dataset
-
-    def gen_predict_dataset(self, imageset):
-        image_num = np.array(imageset).shape[0]
-        person_num = 0  #紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
-        min_person = 0 #小於此人數直接不記
+        person_num = 0  # 紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
+        min_person = 0  # 小於此人數直接不記
         dataset = []
 
         # 依序讀取圖 並轉成關鍵點資訊 2維資料 人*(特徵*時間) 預設時間片段為3
@@ -512,20 +478,56 @@ class general_mulitpose_model(object):
                 return
 
             data = self.gen_pose(personwiseKeypoints, keypoints_list)
-            data.pop(0)
+            if(i == 0):
+                dataset = data
+            else:
+                for j in range(0, person_num):  # 第j人
+                    dataset[j].extend(data[j])
+                    if(i==image_num-1):
+                        a = 0
+                        for k in range(0, 63):  
+                            if(dataset[j][k]==-1):
+                                a = a + 1
+                        if(a >= 50):    # 太多部位沒有就當作rest
+                            dataset[j].extend(["rest"])
+                        else:
+                            dataset[j].extend(action)
+ 
+        return dataset
+
+    def gen_predict_dataset(self, imageset):
+        image_num = np.array(imageset).shape[0]
+        person_num = 0  # 紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
+        min_person = 0  # 小於此人數直接不記
+        dataset = []
+
+        # 依序讀取圖 並轉成關鍵點資訊 2維資料 人*(特徵*時間) 預設時間片段為3
+        # 3張圖代表3個時間軸 人各自的特徵關係
+        for i in range(0, image_num):
+            personwiseKeypoints, keypoints_list = self.predict_v2(imageset[i])
+            # self.vis_pose(imageset[i], personwiseKeypoints, keypoints_list)
+            curr_person = personwiseKeypoints.shape[0]
+            if(i == 0):
+                if(curr_person <= min_person): # 第1張圖小於最少人數 就直接不算了
+                    return
+                else:
+                    person_num = curr_person
+            elif(person_num != curr_person):   # 後2張圖人數跟第1張圖不一樣 直接不算 (暫不考慮人數變化的影響，直接忽略一次計算)
+                return
+
+            data = self.gen_pose(personwiseKeypoints, keypoints_list)
+            for j in range(0, person_num):
+                data[j].pop(0)
+            print(data)
+            print(dataset)
             if(i == 0): # 第一張圖 直接放入 
                 dataset = data
             else:
                 for j in range(0, person_num):
                     dataset[j].extend(data[j])
-
-        dataset = np.array(dataset) # numpy type
-
-        # 接著把dataset丟入LSTM做預測 
-        # dataset為2維資料 row是每個人 column是特徵的3個時間軸 
-        # 因此要轉成3維資料 這邊可以在LSTM的程式碼那邊去做轉換 
-        # 轉成 人*時間軸*特徵 可用 reshape實作 
-        
+        # for end
+        # dataset = np.array(dataset) # numpy type
+     
         return dataset 
 
 if __name__ == '__main__':

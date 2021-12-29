@@ -14,7 +14,7 @@ class PosePredictor():
     def __init__(self):
         self.window = 3
         self.pose_vec_dim = 20
-        self.list_of_action = ['test','test2']  # 需調整
+        self.list_of_action = ['work','rest']  # 需調整
         self.lbl_dict = {class_name:idx for idx, class_name in enumerate(self.list_of_action)}
 
     def load_lstm_model(self, filename):
@@ -40,7 +40,7 @@ class PosePredictor():
                       metrics=['accuracy'])
 
         history = model.fit(X_train , y_train,
-                            epochs=100,   # 迭代次數
+                            epochs=200,   # 迭代次數
                             batch_size=64, 
                             verbose=1,    # 1 輸出進度條
                             validation_data=(X_test, y_test)) # 驗證資料 
