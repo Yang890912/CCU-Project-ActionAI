@@ -6,6 +6,13 @@ sys.path.append('../')
 
 from COCO_model import general_mulitpose_model
 
+def usage(script_name):
+    print("python %s expected_keypoint_cnt" % script_name)
+
+if len(sys.argv) != 2:
+    usage(sys.argv[0])
+    exit()
+
 # day images path
 test_day_imgs = glob.glob(os.getcwd() + "/test_images/day/**/*.png", recursive=True)
 
@@ -65,7 +72,7 @@ class TestCOCOModel(unittest.TestCase):
         for img in test_day_imgs:
             basename = os.path.basename(img)
             multipose_model.predict(img)
-            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile()
+            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile(expected_keypoint_cnt=int(sys.argv[1]))
             expected_people_cnt = test_day_imgs_expected[idx]
             accuracy = detected_people_cnt / expected_people_cnt * 100
             if accuracy > 100.0:
@@ -120,7 +127,7 @@ class TestCOCOModel(unittest.TestCase):
         for img in test_night_imgs:
             basename = os.path.basename(img)
             multipose_model.predict(img)
-            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile()
+            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile(expected_keypoint_cnt=int(sys.argv[1]))
             expected_people_cnt = test_night_imgs_expected[idx]
             accuracy = detected_people_cnt / expected_people_cnt * 100
             if accuracy > 100.0:
@@ -164,4 +171,4 @@ class TestCOCOModel(unittest.TestCase):
             res.close()
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(argv=['first-arg-is-ignored'], exit=True)
