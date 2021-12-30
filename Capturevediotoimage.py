@@ -44,9 +44,9 @@ class VedioConverter():
         tool = general_mulitpose_model()    # coco model
         print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
 
-        # f_csv = open("./trans_to_train/test.csv", "w", newline='') # 測試用 到時候真正寫入檔案用追加方式(a+)
+        f_csv = open("./trans_to_train/test.csv", "w", newline='') # 測試用 到時候真正寫入檔案用追加方式(a+)
         print("[Time]Time Open Csv: {}".format(time.time() - start))
-        f_csv = open("./trans_to_train/pose_data.csv", "a", newline='') # 真正寫入檔案
+        # f_csv = open("./trans_to_train/pose_data.csv", "a", newline='') # 真正寫入檔案
 
         # 讀影片
         while True:
@@ -103,7 +103,7 @@ class VedioConverter():
             ret = vedio.grab()
             # if frame is read correctly ret is True
             if not ret:
-                print("Can't receive frame (stream end?). Exiting ...")
+                print("[INFO]Can't receive frame (stream end?). Exiting ...")
                 break
 
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
@@ -113,11 +113,13 @@ class VedioConverter():
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
                         predict_images.append(frame)
                         dataset = tool.gen_predict_dataset(predict_images)  # 圖片轉成dataset
-
-                        # dataset return  1 = 人數夠多  0 = 人數過少
+                        
+                        # dataset return  1 = 人數夠多  0 = 人數過少 others
                         if(dataset == 1):
                             work_skip = 120*fps
                             worktime = worktime + 120
+                        elif(dataset == 0):
+                            rest_skip = 15*fps
                         elif(dataset):    # 有可用資料
                             dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
@@ -134,7 +136,7 @@ class VedioConverter():
                     else:
                         predict_images.append(frame)
                 else:
-                    print("Can't receive frame (stream end?). Exiting ...") 
+                    print("[INFO]Can't receive frame (stream end?). Exiting ...") 
                     break
             elif(rest_skip > 0):
                 rest_skip = rest_skip - 1
@@ -142,7 +144,7 @@ class VedioConverter():
                 work_skip = work_skip - 1
 
             turn = turn + 1
-            vediotime = turn // fps
+            vediotime = (turn-1) // fps
             # print(work_skip)
             # print(rest_skip)
             self.print_time(worktime)
@@ -150,6 +152,7 @@ class VedioConverter():
         # end While
 
         vedio.release()   
+        return  worktime, vediotime
 
     def test_predict(self, filename, rest_skiptime, work_skiptime):
         start = time.time()
@@ -204,19 +207,15 @@ class VedioConverter():
                 work_skip = work_skip - 1
 
             turn = turn + 1
-            vediotime = turn // fps
-            # print(work_skip)
-            # print(rest_skip)
-            # self.print_time(worktime)
-            # self.print_time(vediotime)
         # end While
 
-        vedio.release() 
+        vedio.release()
+        
 
 if __name__ == '__main__':
     vc = VedioConverter()
-    # vc.transform_to_traindata("D:/文件/python_programming/project/train_images/12-30/rest/Project 2-1.avi", ["rest"])
-    # vc.transform_and_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4")
-    vc.test_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4", 15, 120)
+    vc.transform_to_traindata("./train_images/12-30/rest/Project 2-2.avi", ["rest"])
+    # vc.transform_and_predict("./train_images/production ID_4271760.mp4")
+    # vc.test_predict("./train_images/production ID_4271760.mp4", 15, 120)
     cv2.destroyAllWindows()
 
