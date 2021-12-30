@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from Capturevediotoimage import VedioConverter 
 
 
@@ -8,7 +7,7 @@ curr_vedio_time = 0
 if __name__ == '__main__':
     test = VedioConverter()
     test.test_predict("./train_images/v2/Produce_0.mp4", 15, 120)
-=======
+
 from Capturevediotoimage import VedioConverter 
 import tkinter as tk
 import os
@@ -83,4 +82,4 @@ if __name__ == '__main__':
     # run the application
     root.mainloop()
     t.do_run = False
->>>>>>> 0461ba227a76debcb4d569488d7a8a7005d77b5c
+
