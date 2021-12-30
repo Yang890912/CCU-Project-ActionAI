@@ -21,15 +21,12 @@ class VedioConverter():
         print("[Time]{}:{}:{}" .format(hour, minute, second))
 
     def judge_result(self, result):    
-        if(result.shape[0] > 5):
-            return True
-
         worker = 0
         for i in range(0, result.shape[0]):
             print(result[i][0], " " ,result[i][1])
             if( result[i][0] > result[i][1]):
                 worker = worker + 1
-        if( worker/result.shape[0] > 0.5 ):
+        if( worker/result.shape[0] > 0.5 ): #工作者/總人數
             return True
         else:
             return False
@@ -117,14 +114,18 @@ class VedioConverter():
                         predict_images.append(frame)
                         dataset = tool.gen_predict_dataset(predict_images)  # 圖片轉成dataset
 
-                        if dataset:    # 有可用資料
-                            dataset = np.array(dataset) # numpy type
+                        # dataset return  1 = 人數夠多  0 = 人數過少
+                        if(dataset == 1):
+                            work_skip = 120*fps
+                            worktime = worktime + 120
+                        elif(dataset):    # 有可用資料
+                            dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
 
                             if(self.judge_result(result) == True):  # 有工作狀態->跳120秒 沒有->跳15秒
                                 work_skip = 120*fps
                                 worktime = worktime + 120
-                            else:
+                            else: 
                                 rest_skip = 15*fps
                         else:   #　沒資料直接跳過
                             rest_skip = 15*fps
@@ -150,10 +151,72 @@ class VedioConverter():
 
         vedio.release()   
 
+    def test_predict(self, filename, rest_skiptime, work_skiptime):
+        start = time.time()
+        turn = 1
+        predict_images = []
+        vedio = cv2.VideoCapture(filename)
+        fps = int(vedio.get(cv2.CAP_PROP_FPS))
+        print("[INFO]Vedio's Fps:",fps)
+        tool = general_mulitpose_model()
+        print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
+
+        predicter = PosePredictor()
+        lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
+        print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
+
+        
+        rest_skip, work_skip, worktime, vediotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
+   
+        while True:
+            ret = vedio.grab()
+            # if frame is read correctly ret is True
+            if not ret:
+                print("Can't receive frame (stream end?). Exiting ...")
+                break
+
+            # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
+            if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
+                ret, frame = vedio.retrieve() 
+                if ret:
+                    if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
+                        predict_images.append(frame)
+                        dataset = tool.gen_predict_dataset(predict_images)  # 圖片轉成dataset
+
+                        if(dataset == 1):
+                            a = 1
+                        elif(dataset):    # 有可用資料
+                            dataset = np.array(dataset) # 轉numpy type
+                            result = predicter.predict(dataset, lstm_model)  # 預測結果
+
+                            if(self.judge_result(result) == True):  # test
+                                a = 1
+
+                        predict_images.clear()
+                    else:
+                        predict_images.append(frame)
+                else:
+                    print("Can't receive frame (stream end?). Exiting ...") 
+                    break
+            elif(rest_skip > 0):
+                rest_skip = rest_skip - 1
+            elif(work_skip > 0):
+                work_skip = work_skip - 1
+
+            turn = turn + 1
+            vediotime = turn // fps
+            # print(work_skip)
+            # print(rest_skip)
+            # self.print_time(worktime)
+            # self.print_time(vediotime)
+        # end While
+
+        vedio.release() 
 
 if __name__ == '__main__':
     vc = VedioConverter()
-    # vc.transform_to_traindata("D:/文件/python_programming/project/train_images/v2/Produce_1.mp4", ["work"])
-    vc.transform_and_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4")
+    # vc.transform_to_traindata("D:/文件/python_programming/project/train_images/12-30/rest/Project 2-1.avi", ["rest"])
+    # vc.transform_and_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4")
+    vc.test_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4", 15, 120)
     cv2.destroyAllWindows()
 

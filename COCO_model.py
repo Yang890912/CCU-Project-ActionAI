@@ -469,6 +469,7 @@ class general_mulitpose_model(object):
             personwiseKeypoints, keypoints_list = self.predict_v2(imageset[i])
             # self.vis_pose(imageset[i], personwiseKeypoints, keypoints_list)
             curr_person = personwiseKeypoints.shape[0]
+
             if(i == 0):
                 if(curr_person <= min_person): # 第1張圖小於最少人數 就直接不算了
                     return
@@ -499,6 +500,7 @@ class general_mulitpose_model(object):
         image_num = np.array(imageset).shape[0]
         person_num = 0  # 紀錄這些圖片裡應有幾人 判斷圖片人數都一樣才做計算
         min_person = 0  # 小於此人數直接不記
+        max_person = 5  # 大於此人數當作都在工作
         dataset = []
 
         # 依序讀取圖 並轉成關鍵點資訊 2維資料 人*(特徵*時間) 預設時間片段為3
@@ -507,9 +509,13 @@ class general_mulitpose_model(object):
             personwiseKeypoints, keypoints_list = self.predict_v2(imageset[i])
             # self.vis_pose(imageset[i], personwiseKeypoints, keypoints_list)
             curr_person = personwiseKeypoints.shape[0]
+
+            if(curr_person >= max_person):  # 人數很多，當作工作中
+                return 1
+
             if(i == 0):
                 if(curr_person <= min_person): # 第1張圖小於最少人數 就直接不算了
-                    return
+                    return 0
                 else:
                     person_num = curr_person
             elif(person_num != curr_person):   # 後2張圖人數跟第1張圖不一樣 直接不算 (暫不考慮人數變化的影響，直接忽略一次計算)
@@ -518,16 +524,15 @@ class general_mulitpose_model(object):
             data = self.gen_pose(personwiseKeypoints, keypoints_list)
             for j in range(0, person_num):
                 data[j].pop(0)
-            print(data)
-            print(dataset)
+
             if(i == 0): # 第一張圖 直接放入 
                 dataset = data
             else:
                 for j in range(0, person_num):
                     dataset[j].extend(data[j])
+            print(dataset)
         # for end
-        # dataset = np.array(dataset) # numpy type
-     
+   
         return dataset 
 
 if __name__ == '__main__':
