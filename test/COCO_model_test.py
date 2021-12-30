@@ -6,6 +6,13 @@ sys.path.append('../')
 
 from COCO_model import general_mulitpose_model
 
+def usage(script_name):
+    print("python %s expected_keypoint_cnt" % script_name)
+
+if len(sys.argv) != 2:
+    usage(sys.argv[0])
+    exit()
+
 # day images path
 test_day_imgs = glob.glob(os.getcwd() + "/test_images/day/**/*.png", recursive=True)
 
@@ -42,7 +49,7 @@ with open('./test_images/night/expected.txt') as file:
 
 class TestCOCOModel(unittest.TestCase):
     def setUp(self):
-        self.verificationsErrors = []
+        self.verifications_err = []
         self.test_day_front_avg = 0
         self.test_day_side_avg = 0
         self.test_day_rear_avg = 0
@@ -51,7 +58,7 @@ class TestCOCOModel(unittest.TestCase):
         self.test_night_rear_avg = 0
 
     def tearDown(self):
-        self.assertEqual([], self.verificationsErrors)
+        self.assertEqual([], self.verifications_err)
 
     def test_COCO_Model_Day(self):
         self.assertEqual.__self__.maxDiff = None
@@ -65,7 +72,7 @@ class TestCOCOModel(unittest.TestCase):
         for img in test_day_imgs:
             basename = os.path.basename(img)
             multipose_model.predict(img)
-            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile()
+            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile(expected_keypoint_cnt=int(sys.argv[1]))
             expected_people_cnt = test_day_imgs_expected[idx]
             accuracy = detected_people_cnt / expected_people_cnt * 100
             if accuracy > 100.0:
@@ -77,19 +84,19 @@ class TestCOCOModel(unittest.TestCase):
                 try: 
                     self.assertEqual(detected_people_cnt, expected_people_cnt, msg=front_msg + "(" + basename + "): " + str(accuracy) + "%")
                 except AssertionError as e: 
-                    self.verificationsErrors.append(str(e))
+                    self.verifications_err.append(str(e))
             elif "rear" in img:
                 self.test_day_rear_avg += accuracy
                 try: 
                     self.assertEqual(detected_people_cnt, expected_people_cnt, msg=rear_msg + "(" + basename + "): " + str(accuracy) + "%")
                 except AssertionError as e: 
-                    self.verificationsErrors.append(str(e))
+                    self.verifications_err.append(str(e))
             elif "side" in img:
                 self.test_day_side_avg += accuracy
                 try: 
                     self.assertEqual(detected_people_cnt, expected_people_cnt, msg=side_msg + "(" + basename + "): " + str(accuracy) + "%")
                 except AssertionError as e: 
-                    self.verificationsErrors.append(str(e))
+                    self.verifications_err.append(str(e))
                 
         self.test_day_front_avg /= test_day_imgs_cnt_dict.get('front')
         self.test_day_rear_avg /= test_day_imgs_cnt_dict.get('rear')
@@ -120,7 +127,7 @@ class TestCOCOModel(unittest.TestCase):
         for img in test_night_imgs:
             basename = os.path.basename(img)
             multipose_model.predict(img)
-            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile()
+            detected_people_cnt = multipose_model.getPeopleCntByKeyPointsFile(expected_keypoint_cnt=int(sys.argv[1]))
             expected_people_cnt = test_night_imgs_expected[idx]
             accuracy = detected_people_cnt / expected_people_cnt * 100
             if accuracy > 100.0:
@@ -132,19 +139,19 @@ class TestCOCOModel(unittest.TestCase):
                 try: 
                     self.assertEqual(detected_people_cnt, expected_people_cnt, msg=front_msg + "(" + basename + "): " + str(accuracy) + "%")
                 except AssertionError as e: 
-                    self.verificationsErrors.append(str(e))
+                    self.verifications_err.append(str(e))
             elif "rear" in img:
                 self.test_night_rear_avg += accuracy
                 try: 
                     self.assertEqual(detected_people_cnt, expected_people_cnt, msg=rear_msg + "(" + basename + "): " + str(accuracy) + "%")
                 except AssertionError as e: 
-                    self.verificationsErrors.append(str(e))
+                    self.verifications_err.append(str(e))
             elif "side" in img:
                 self.test_night_side_avg += accuracy
                 try: 
                     self.assertEqual(detected_people_cnt, expected_people_cnt, msg=side_msg + "(" + basename + "): " + str(accuracy) + "%")
                 except AssertionError as e: 
-                    self.verificationsErrors.append(str(e))
+                    self.verifications_err.append(str(e))
                 
         self.test_night_front_avg /= test_night_imgs_cnt_dict.get('front')
         self.test_night_rear_avg /= test_night_imgs_cnt_dict.get('rear')
@@ -164,4 +171,4 @@ class TestCOCOModel(unittest.TestCase):
             res.close()
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(argv=['first-arg-is-ignored'], exit=True)

@@ -198,7 +198,7 @@ class general_mulitpose_model(object):
             file.close()
 
     # 根據 keypoints 檔案，計算人數
-    def getPeopleCntByKeyPointsFile(self, filename="keypoints.txt"):
+    def getPeopleCntByKeyPointsFile(self, expected_keypoint_cnt, filename="keypoints.txt"):
         people_cnt = 0
         keypoints_cnt = []
         with open(filename, 'r') as file:
@@ -227,7 +227,7 @@ class general_mulitpose_model(object):
         # then someone is detected
         for col in zip(*keypoints_cnt):
             cnt = np.sum(col)
-            if cnt >= 9:
+            if cnt >= expected_keypoint_cnt:
                 people_cnt += 1
 
         return people_cnt
