@@ -25,7 +25,7 @@ class TestPrediction(unittest.TestCase):
         self.rest_skiptime = int(sys.argv[2])
         self.work_skiptime = int(sys.argv[3])
         result_file = open("predict_result.txt", "a")
-        # result_file.truncate(0) # because maybe have previous video result
+        result_file.truncate(0) # because maybe have previous video result
 
     def test_prediction(self):
         self.predictor.test_predict(self.video_to_test, self.rest_skiptime, self.work_skiptime)
