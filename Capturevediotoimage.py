@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time
 import threading
+from os.path import dirname, join
 
 from COCO_model import general_mulitpose_model 
 from action_model import PosePredictor
@@ -21,11 +22,17 @@ class VedioConverter():
         print("[Time]{}:{}:{}" .format(hour, minute, second))
 
     def judge_result(self, result):    
+        # write result to file to analysis accuracy
+        result_file = open("predict_result.txt", "a")
+
         worker = 0
         for i in range(0, result.shape[0]):
+            result_file.write(''.join(str(result[i][0]) + "," + str(result[i][1]) + "\n"))
             print(result[i][0], " " ,result[i][1])
             if( result[i][0] > result[i][1]):
                 worker = worker + 1
+
+        result_file.close()
         if( worker/result.shape[0] > 0.5 ): #工作者/總人數
             return True
         else:
@@ -162,7 +169,8 @@ class VedioConverter():
         print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
 
         predicter = PosePredictor()
-        lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
+        # lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
+        lstm_model = predicter.load_lstm_model(join(dirname(__file__), './model/lstm_fishman_action.h5'))
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
 
         

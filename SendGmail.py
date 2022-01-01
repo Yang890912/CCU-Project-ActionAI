@@ -22,9 +22,16 @@ class SendGmail:
         msg["To"] = self.Recv
         msg["From"] = self.account
         
+        is_failed = False
         # 寄信
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
         server.login(self.account, self.passwd)
-        server.send_message(msg)
+        try:
+            ret = server.send_message(msg)
+            if len(ret) != 0:
+                is_failed = True
+        except (SMTPRecipientsRefused, SMTPHeloError, SMTPSenderRefused, SMTPDataError, SMTPNotSupportedError) as e:
+            is_failed = True
         server.quit()
+        return is_failed
