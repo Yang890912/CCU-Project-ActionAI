@@ -47,10 +47,10 @@ class general_mulitpose_model(object):
 
     #模組提取
     def get_model(self):
-        # prototxt = join(dirname(__file__), "./model/coco/pose_deploy_linevec.prototxt")
-        # caffemodel = join(dirname(__file__), "./model/coco/pose_iter_440000.caffemodel")
-        prototxt = "./model/coco/pose_deploy_linevec.prototxt"
-        caffemodel = "./model/coco/pose_iter_440000.caffemodel"
+        prototxt = join(dirname(__file__), "./model/coco/pose_deploy_linevec.prototxt")
+        caffemodel = join(dirname(__file__), "./model/coco/pose_iter_440000.caffemodel")
+        # prototxt = "./model/coco/pose_deploy_linevec.prototxt"
+        # caffemodel = "./model/coco/pose_iter_440000.caffemodel"
         coco_net = cv2.dnn.readNetFromCaffe(prototxt, caffemodel)
         coco_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         coco_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
@@ -555,5 +555,4 @@ if __name__ == '__main__':
     #print(personwiseKeypoints)
     #print(keypoints_list.shape)
     print("[INFO]Time Taken in Done: {}".format(time.time() - start))
->>>>>>> 0461ba227a76debcb4d569488d7a8a7005d77b5c
     print("[INFO]Done.")

@@ -3,8 +3,10 @@ import os
 import glob
 import sys
 sys.path.append('../')
+sys.path.append('./plot')
 
 from COCO_model import general_mulitpose_model
+import COCO_model_plot
 
 def usage(script_name):
     print("python %s expected_keypoint_cnt" % script_name)
@@ -169,6 +171,9 @@ class TestCOCOModel(unittest.TestCase):
             res.write(str(self.test_night_side_avg))
             res.write("\n")
             res.close()
+
+    def test_plot(self):
+        COCO_model_plot.plot()
 
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=True)
