@@ -115,6 +115,8 @@ class VedioConverter():
 
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
+                self.print_time(worktime)
+                self.print_time(vediotime)
                 ret, frame = vedio.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
@@ -125,6 +127,8 @@ class VedioConverter():
                         if(dataset == 1):
                             work_skip = 120*fps
                             worktime = worktime + 120
+                        elif(dataset == 0):
+                            rest_skip = 15*fps
                         elif(dataset):    # 有可用資料
                             dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
@@ -150,13 +154,10 @@ class VedioConverter():
 
             turn = turn + 1
             vediotime = turn // fps
-            # print(work_skip)
-            # print(rest_skip)
-            self.print_time(worktime)
-            self.print_time(vediotime)
         # end While
 
-        vedio.release()   
+        vedio.release()
+        return worktime, vediotime
 
     def test_predict(self, filename, rest_skiptime, work_skiptime):
         start = time.time()
@@ -185,6 +186,8 @@ class VedioConverter():
 
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
+                self.print_time(worktime)
+                self.print_time(vediotime)
                 ret, frame = vedio.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
@@ -192,13 +195,21 @@ class VedioConverter():
                         dataset = tool.gen_predict_dataset(predict_images)  # 圖片轉成dataset
 
                         if(dataset == 1):
-                            a = 1
+                            work_skip = work_skiptime*fps
+                            worktime = worktime + work_skiptime
+                        elif(dataset == 0):
+                            rest_skip = rest_skiptime*fps
                         elif(dataset):    # 有可用資料
                             dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
 
-                            if(self.judge_result(result) == True):  # test
-                                a = 1
+                            if(self.judge_result(result) == True):  # 有工作狀態->跳120秒 沒有->跳15秒
+                                work_skip = work_skiptime*fps
+                                worktime = worktime + work_skiptime
+                            else: 
+                                rest_skip = rest_skiptime*fps
+                        else:   #　沒資料直接跳過
+                            rest_skip = rest_skiptime*fps
 
                         predict_images.clear()
                     else:
@@ -213,19 +224,16 @@ class VedioConverter():
 
             turn = turn + 1
             vediotime = turn // fps
-            # print(work_skip)
-            # print(rest_skip)
-            # self.print_time(worktime)
-            # self.print_time(vediotime)
         # end While
 
-        vedio.release() 
+        vedio.release()
+        return worktime, vediotime 
 
 if __name__ == '__main__':
     vc = VedioConverter()
-    # vc.transform_to_traindata("D:/文件/python_programming/project/train_images/12-30/rest/Project 2-1.avi", ["rest"])
-    # vc.transform_and_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4")
-    vc.test_predict("D:/文件/python_programming/project/train_images/production ID_4271760.mp4", 15, 120)
+    # vc.transform_to_traindata(join(dirname(__file__), "./train_images/12-30/rest/Project 2-1.avi"), ["rest"])
+    # vc.transform_and_predict(join(dirname(__file__), "./train_images/longtest.mp4"))
+    vc.test_predict(join(dirname(__file__), "./train_images/longtest.mp4"), 15, 120)
     cv2.destroyAllWindows()
 
 
