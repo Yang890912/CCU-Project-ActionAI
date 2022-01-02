@@ -555,5 +555,4 @@ if __name__ == '__main__':
     #print(personwiseKeypoints)
     #print(keypoints_list.shape)
     print("[INFO]Time Taken in Done: {}".format(time.time() - start))
->>>>>>> 0461ba227a76debcb4d569488d7a8a7005d77b5c
     print("[INFO]Done.")

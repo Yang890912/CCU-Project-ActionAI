@@ -1,14 +1,4 @@
 from Capturevediotoimage import VedioConverter 
-
-
-curr_work_time = 0
-curr_vedio_time = 0
-
-if __name__ == '__main__':
-    test = VedioConverter()
-    test.test_predict("./train_images/v2/Produce_0.mp4", 15, 120)
-
-from Capturevediotoimage import VedioConverter 
 import tkinter as tk
 import os
 import time
@@ -17,11 +7,11 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter.messagebox import showinfo
 
-# /mnt/c/Users/money/Downloads/GUI_v2/CCU-project-ActionAI/videos/
+# /mnt/c/Users/money/Downloads/CCU-project-ActionAI
 DirPath = 'C:/Users/money/Videos/'
+selected = set()
 def search_new_file():
-    global DirPath
-    selected = set()
+    global DirPath, selected
     t = threading.currentThread()
     while getattr(t, "do_run", True):
         Files = os.listdir(DirPath)
@@ -29,10 +19,9 @@ def search_new_file():
             if file.endswith('.mp4') and file not in selected:
                 FilePath = DirPath + '/' + file
                 print(FilePath)
-                video = VedioConverter()
-                video.test_predict(FilePath, 15, 120)
+                # video = VedioConverter()
+                # video.test_predict(FilePath, 15, 120)
                 selected.add(file)
-                print(file)
 
         time.sleep(1)
 
@@ -57,9 +46,10 @@ def select_dir():
         # )
         DirPath = DirName
 
+thread = threading.Thread(target = search_new_file)
 def run():
-    t = threading.Thread(target = search_new_file)
-    t.start()
+    if not thread.is_alive():
+        thread.start()
 
 # open button
 open_button = ttk.Button(
@@ -81,5 +71,5 @@ if __name__ == '__main__':
     run_button.pack(expand=True)
     # run the application
     root.mainloop()
-    t.do_run = False
+    thread.do_run = False
 
