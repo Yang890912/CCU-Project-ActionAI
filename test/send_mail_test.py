@@ -19,11 +19,12 @@ class TestSendMail(unittest.TestCase):
     def setUp(self):
         self.thres = int(sys.argv[1])
         self.recver = sys.argv[2]
-        self.snder = SendGmail("test88812345@gmail.com", 88812345, self.recver)
+        self.snder = SendGmail("test88812345@gmail.com", "1234567a.", self.recver)
 
     # 當 model 預測工作超時的時候，發送 email
     def test_send_mail_with_thres(self):
-        print("todo")
+        is_failed = self.snder.send_message()
+        self.assertFalse(is_failed)
 
 if __name__ == '__main__':
     unittest.main(argv=['ignored', '-v'], exit=True)
