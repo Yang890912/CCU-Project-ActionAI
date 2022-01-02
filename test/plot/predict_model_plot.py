@@ -9,8 +9,8 @@ def plot():
         rest_prob = []
         for line in res:
             tmp = line.strip("\n").split(",")
-            work_prob.append(tmp[0]) # probability of work
-            rest_prob.append(tmp[1]) # probability of rest
+            work_prob.append(float(tmp[0])) # probability of work
+            rest_prob.append(float(tmp[1])) # probability of rest
             frame.append(counter * 15) # analysis three images by three images and also get one image every 5 frames => 3 x 5 = 15
             counter += 1
         res.close()
@@ -22,6 +22,5 @@ def plot():
     plt.scatter(frame, rest_prob)
     plt.plot(frame, work_prob, '-o', label = "work prob")
     plt.plot(frame, rest_prob, '-o', label = "rest prob")
-    plt.gca().invert_yaxis()
     plt.legend()
     plt.show()
