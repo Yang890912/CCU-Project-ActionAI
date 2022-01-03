@@ -1,4 +1,4 @@
-from Capturevediotoimage import VedioConverter 
+from project.Capturevideotoimage import VideoConverter 
 import tkinter as tk
 import os
 import time

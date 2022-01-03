@@ -4,7 +4,7 @@ import sys
 sys.path.append('../')
 
 from SendGmail import SendGmail
-from Capturevediotoimage import VedioConverter
+from Capturevideotoimage import VideoConverter
 
 def usage(script_name):
     print("python %s video_to_test_path rest_skiptime work_skiptime threshold email_recv" % script_name)
@@ -31,7 +31,7 @@ class TestSendMail(unittest.TestCase):
     predictor = None
 
     def setUp(self):
-        self.predictor = VedioConverter()
+        self.predictor = VideoConverter()
         self.video_to_test = sys.argv[1]
         self.rest_skiptime = int(sys.argv[2])
         self.work_skiptime = int(sys.argv[3])

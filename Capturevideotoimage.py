@@ -7,11 +7,11 @@ from os.path import dirname, join
 from COCO_model import general_mulitpose_model 
 from action_model import PosePredictor
 
-class VedioConverter():
+class VideoConverter():
     def __init__(self, number=5):
         self.time_F = number
         self.worktime = 0
-        self.vediotime = 0
+        self.videotime = 0
 
     def print_time(self, second):
         minute = second // 60
@@ -44,9 +44,9 @@ class VedioConverter():
         start = time.time()
         turn = 1
         train_images = []
-        vedio = cv2.VideoCapture(filename)
-        fps = int(vedio.get(cv2.CAP_PROP_FPS))
-        print("[INFO]Vedio's Fps:",fps)
+        video = cv2.VideoCapture(filename)
+        fps = int(video.get(cv2.CAP_PROP_FPS))
+        print("[INFO]Video's Fps:",fps)
 
         tool = general_mulitpose_model()    # coco model
         print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
@@ -57,7 +57,7 @@ class VedioConverter():
 
         # 讀影片
         while True:
-            ret = vedio.grab()
+            ret = video.grab()
             # if frame is read correctly ret is True
             if not ret:
                 print("[INFO]Can't receive frame (stream end?). Exiting ...")
@@ -65,7 +65,7 @@ class VedioConverter():
 
             # 每隔幾幀進行擷取 省略每次都需read()的時間 改用grab + retrieve
             if(turn % self.time_F == 0):    #5
-                ret, frame = vedio.retrieve() 
+                ret, frame = video.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
                         train_images.append(frame)
@@ -86,16 +86,16 @@ class VedioConverter():
             turn = turn + 1
         # end while
         f_csv.close()
-        vedio.release()   
+        video.release()   
 
     # 把影片每3張圖 做一次預測資料 (預測用)
     def transform_and_predict(self, filename):
         start = time.time()
         turn = 1
         predict_images = []
-        vedio = cv2.VideoCapture(filename)
-        fps = int(vedio.get(cv2.CAP_PROP_FPS))
-        print("[INFO]Vedio's Fps:",fps)
+        video = cv2.VideoCapture(filename)
+        fps = int(video.get(cv2.CAP_PROP_FPS))
+        print("[INFO]Video's Fps:",fps)
         tool = general_mulitpose_model()
         print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
 
@@ -104,10 +104,10 @@ class VedioConverter():
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
 
         
-        rest_skip, work_skip, worktime, vediotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
+        rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
    
         while True:
-            ret = vedio.grab()
+            ret = video.grab()
             # if frame is read correctly ret is True
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
@@ -116,8 +116,8 @@ class VedioConverter():
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
                 self.print_time(worktime)
-                self.print_time(vediotime)
-                ret, frame = vedio.retrieve() 
+                self.print_time(videotime)
+                ret, frame = video.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
                         predict_images.append(frame)
@@ -153,19 +153,19 @@ class VedioConverter():
                 work_skip = work_skip - 1
 
             turn = turn + 1
-            vediotime = turn // fps
+            videotime = turn // fps
         # end While
 
-        vedio.release()
-        return worktime, vediotime
+        video.release()
+        return worktime, videotime
 
     def test_predict(self, filename, rest_skiptime, work_skiptime):
         start = time.time()
         turn = 1
         predict_images = []
-        vedio = cv2.VideoCapture(filename)
-        fps = int(vedio.get(cv2.CAP_PROP_FPS))
-        print("[INFO]Vedio's Fps:",fps)
+        video = cv2.VideoCapture(filename)
+        fps = int(video.get(cv2.CAP_PROP_FPS))
+        print("[INFO]Video's Fps:",fps)
         tool = general_mulitpose_model()
         print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
 
@@ -175,10 +175,10 @@ class VedioConverter():
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
 
         
-        rest_skip, work_skip, worktime, vediotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
+        rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
    
         while True:
-            ret = vedio.grab()
+            ret = video.grab()
             # if frame is read correctly ret is True
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
@@ -187,8 +187,8 @@ class VedioConverter():
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
                 self.print_time(worktime)
-                self.print_time(vediotime)
-                ret, frame = vedio.retrieve() 
+                self.print_time(videotime)
+                ret, frame = video.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
                         predict_images.append(frame)
@@ -223,17 +223,17 @@ class VedioConverter():
                 work_skip = work_skip - 1
 
             turn = turn + 1
-            vediotime = turn // fps
+            videotime = turn // fps
         # end While
 
-        vedio.release()
-        return worktime, vediotime 
+        video.release()
+        return worktime, videotime 
 
 if __name__ == '__main__':
-    vc = VedioConverter()
+    vc = VideoConverter()
     # vc.transform_to_traindata(join(dirname(__file__), "./train_images/12-30/rest/Project 2-1.avi"), ["rest"])
     # vc.transform_and_predict(join(dirname(__file__), "./train_images/longtest.mp4"))
-    vc.test_predict(join(dirname(__file__), "./train_images/longtest.mp4"), 15, 120)
+    vc.test_predict(join(dirname(__file__), "./train_images/longtest.mp4"), 30, 120)
     cv2.destroyAllWindows()
 
 

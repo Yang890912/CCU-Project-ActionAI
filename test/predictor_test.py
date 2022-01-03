@@ -3,7 +3,7 @@ import sys
 sys.path.append('../')
 sys.path.append('./plot')
 
-from Capturevediotoimage import VedioConverter
+from Capturevideotoimage import VideoConverter
 import predict_model_plot
 
 def usage(script_name):
@@ -20,7 +20,7 @@ class TestPrediction(unittest.TestCase):
     predictor = None
 
     def setUp(self):
-        self.predictor = VedioConverter()
+        self.predictor = VideoConverter()
         self.video_to_test = sys.argv[1]
         self.rest_skiptime = int(sys.argv[2])
         self.work_skiptime = int(sys.argv[3])
