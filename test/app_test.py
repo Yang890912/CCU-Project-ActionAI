@@ -6,7 +6,7 @@ sys.path.append('../')
 from SendGmail import SendGmail
 from trigger import GUI, EditWindow
 
-class TestSendMail(unittest.TestCase):
+class TestApp(unittest.TestCase):
     email1 = None
     email2 = None
     app = GUI()
@@ -30,6 +30,9 @@ class TestSendMail(unittest.TestCase):
 
     def test_gui_send_mail_button(self):
         self.assertEqual(self.app.err, None)
+
+    def test_gui_run_button(self):
+        self.assertEqual(self.app.is_over_work_thres, 1)
 
 if __name__ == '__main__':
     unittest.main(argv=['ignored', '-v'], exit=True)

@@ -100,7 +100,8 @@ class VideoConverter():
         print("[Time]Time Taken in Model Loading: {}".format(time.time() - start))
 
         predicter = PosePredictor()
-        lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
+        lstm_model = predicter.load_lstm_model(join(dirname(__file__), './model/lstm_fishman_action.h5'))
+        # lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
 
         
