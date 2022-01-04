@@ -2,6 +2,7 @@ import os
 import re
 import time
 import threading
+import signal
 import schedule
 import datetime
 import tkinter as tk
@@ -44,11 +45,16 @@ class GUI():
         self.err = None
         self.work_thres = 28800 # 8 hours
         self.is_over_work_thres = False
+        self.stop_event = threading.Event()
+        self.pid = os.getpid()
         
         self.PredictThread = threading.Thread(target = self.search_new_file)
         self.ResetEveryDayThread = threading.Thread(target = self.reset_everyday)
         # schedule.every().minute.at(":30").do(self.reset) # for test
         schedule.every().day.at("23:59").do(self.reset)
+
+        # overwrite X callback
+        self.root.protocol('WM_DELETE_WINDOW', self.terminate)
 
         self.open_button = ttk.Button(
             self.root,
@@ -111,6 +117,11 @@ class GUI():
         self.CurrentVideoText.pack(expand = False)
         self.CurrentStatusText.pack(expand = False)
 
+    def terminate(self):
+        os.kill(self.pid, signal.SIGTERM)
+        self.stop_event.set()
+        self.root.destroy()
+
     def edit_file(self):
         top = Tk()
         top.geometry("500x500")
@@ -149,6 +160,7 @@ class GUI():
                 if self.Running and (not file.startswith('(done)')) and file.endswith('.mp4'):
                     FilePath = self.DirPath + '/' + file
                     self.CurrentVideo.set('Current Predict Video: ' + str(file))
+                    print('Current Predict Video: ' + str(file))
                     print(FilePath)
                     video = VideoConverter()
                     WorkTime, VideoTime = video.transform_and_predict(FilePath)
