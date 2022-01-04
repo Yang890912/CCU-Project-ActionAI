@@ -86,12 +86,12 @@ class GUI():
             width = 20,
             command = self.send_email
         )
-        self.stop_button = ttk.Button(
-            self.root,
-            text = 'Stop',
-            width = 20,
-            command = self.stop_predict
-        )
+        # self.stop_button = ttk.Button(
+        #     self.root,
+        #     text = 'Stop',
+        #     width = 20,
+        #     command = self.stop_predict
+        # )
         self.reset_button = ttk.Button(
             self.root,
             text = 'Reset',
@@ -109,7 +109,7 @@ class GUI():
         self.send_button.pack(expand = False)
         self.login_button.pack(expand = False)
         self.run_button.pack(expand = False)
-        self.stop_button.pack(expand = False)
+        # self.stop_button.pack(expand = False)
         self.reset_button.pack(expand = False)
         self.WorkTimeText.pack(expand = False)
         self.VideoTimeText.pack(expand = False)
@@ -155,6 +155,7 @@ class GUI():
         log_file = open("log.txt", "a")
 
         while getattr(CurrentThread, "do_run", True):
+            self.open_button['state'] = "disabled"  # disable open_button
             Files = os.listdir(self.DirPath)
             for file in Files:
                 if self.Running and (not file.startswith('(done)')) and file.endswith('.mp4'):
