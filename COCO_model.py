@@ -530,7 +530,7 @@ class general_mulitpose_model(object):
             else:
                 for j in range(0, person_num):
                     dataset[j].extend(data[j])
-            print(dataset)
+            #print(dataset)
         # for end
    
         return dataset 

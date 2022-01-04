@@ -19,7 +19,7 @@ class VideoConverter():
         hour = minute // 60
         minute = minute % 60
 
-        print("[Time]{}:{}:{}" .format(hour, minute, second))
+        return str(hour)+':'+str(minute)+':'+str(second)
 
     def judge_result(self, result):    
         # write result to file to analysis accuracy
@@ -28,7 +28,7 @@ class VideoConverter():
         worker = 0
         for i in range(0, result.shape[0]):
             result_file.write(''.join(str(result[i][0]) + "," + str(result[i][1]) + "\n"))
-            print(result[i][0], " " ,result[i][1])
+            # print(result[i][0], " " ,result[i][1])
             if( result[i][0] > result[i][1]):
                 worker = worker + 1
 
@@ -103,7 +103,7 @@ class VideoConverter():
         lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
 
-        
+             
         rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
    
         while True:
@@ -115,8 +115,9 @@ class VideoConverter():
 
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
-                self.print_time(worktime)
-                self.print_time(videotime)
+                print('[Time]'+self.print_time(worktime)+'/'+self.print_time(videotime))
+                # self.print_time(worktime)
+                # self.print_time(videotime)
                 ret, frame = video.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
@@ -125,21 +126,21 @@ class VideoConverter():
 
                         # dataset return  1 = 人數夠多  0 = 人數過少
                         if(dataset == 1):
-                            work_skip = 120*fps
-                            worktime = worktime + 120
+                            work_skip = 60*fps
+                            worktime = worktime + 60
                         elif(dataset == 0):
-                            rest_skip = 15*fps
+                            rest_skip = 30*fps
                         elif(dataset):    # 有可用資料
                             dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
 
-                            if(self.judge_result(result) == True):  # 有工作狀態->跳120秒 沒有->跳15秒
-                                work_skip = 120*fps
-                                worktime = worktime + 120
+                            if(self.judge_result(result) == True):  # 有工作狀態->跳x秒 沒有->跳x秒
+                                work_skip = 60*fps
+                                worktime = worktime + 60
                             else: 
-                                rest_skip = 15*fps
+                                rest_skip = 30*fps
                         else:   #　沒資料直接跳過
-                            rest_skip = 15*fps
+                            rest_skip = 30*fps
 
                         predict_images.clear()
                     else:
@@ -186,8 +187,9 @@ class VideoConverter():
 
             # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
-                self.print_time(worktime)
-                self.print_time(videotime)
+                print('[Time]'+self.print_time(worktime)+'/'+self.print_time(videotime))
+                # self.print_time(worktime)
+                # self.print_time(videotime)
                 ret, frame = video.retrieve() 
                 if ret:
                     if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
@@ -203,7 +205,7 @@ class VideoConverter():
                             dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
 
-                            if(self.judge_result(result) == True):  # 有工作狀態->跳120秒 沒有->跳15秒
+                            if(self.judge_result(result) == True):  # 有工作狀態->跳x秒 沒有->跳x秒
                                 work_skip = work_skiptime*fps
                                 worktime = worktime + work_skiptime
                             else: 
