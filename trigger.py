@@ -37,6 +37,8 @@ class GUI():
         self.CurrentDir.set('Current Directory: ' + self.DirPath)
         self.CurrentVideo.set('Current Predict Video: ')
         self.err = None
+        self.work_thres = 28800 # 8 hours
+        self.is_over_work_thres = None
         
         self.PredictThread = threading.Thread(target=self.search_new_file)
         self.open_button = ttk.Button(
@@ -110,6 +112,10 @@ class GUI():
     def search_new_file(self):
         print('Starting to load Video ...')
         CurrentThread = threading.currentThread()
+
+        # write log 
+        log_file = open("log.txt", "a")
+
         while getattr(CurrentThread, "do_run", True):
             Files = os.listdir(self.DirPath)
             for file in Files:
@@ -128,7 +134,22 @@ class GUI():
                     os.rename(FilePath, self.DirPath + '/(done)' + file)
                     self.CurrentVideo.set('Current Predict Video: ')
 
+                    if self.CurrentWorkTime >= self.work_thres:
+                        print('----------------')
+                        print('Exceeds 8 hours of work')
+                        print('Send mail to boss!')
+                        print('----------------')
+                        log_file.write("'%s' video has exceeds 8 hours of working!!!(exceeded work time(seconds): %d)\n" % (str(file), self.CurrentWorkTime))
+                        
+                        self.is_over_work_thres = 1
+                        self.send_email()
+                        self.CurrentVideoTime = 0
+                        self.CurrentWorkTime = 0
+
+
             time.sleep(1)
+
+        log_file.close()
 
     def select_dir(self):
         DirName = filedialog.askdirectory(
