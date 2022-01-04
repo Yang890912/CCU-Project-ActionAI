@@ -55,7 +55,7 @@ class VideoConverter():
         print("[Time]Time Open Csv: {}".format(time.time() - start))
         f_csv = open("./trans_to_train/pose_data.csv", "a", newline='') # 真正寫入檔案
 
-        # 讀影片
+        # read video
         while True:
             ret = video.grab()
             # if frame is read correctly ret is True
@@ -63,17 +63,17 @@ class VideoConverter():
                 print("[INFO]Can't receive frame (stream end?). Exiting ...")
                 break
 
-            # 每隔幾幀進行擷取 省略每次都需read()的時間 改用grab + retrieve
+            # 
             if(turn % self.time_F == 0):    #5
                 ret, frame = video.retrieve() 
                 if ret:
-                    if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
+                    if(turn % (self.time_F*3) == 0):    
                         train_images.append(frame)
                         dataset = tool.gen_train_dataset(train_images, action)
                         print("[Time]Time Generate Dataset: {}".format(time.time() - start))                   
                         print(np.array(dataset).shape)
                         # print(np.array(dataset))
-                        if dataset: # 有數據 表示是正常可用的 
+                        if dataset: 
                             tool.gen_train_csv(dataset, f_csv)  
                                 
                         turn = 1
@@ -88,7 +88,7 @@ class VideoConverter():
         f_csv.close()
         video.release()   
 
-    # 把影片每3張圖 做一次預測資料 (預測用)
+    # predict video
     def transform_and_predict(self, filename):
         start = time.time()
         turn = 1
@@ -105,8 +105,9 @@ class VideoConverter():
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
 
              
-        rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
-   
+        rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip number
+
+        # read video
         while True:
             ret = video.grab()
             # if frame is read correctly ret is True
@@ -114,34 +115,32 @@ class VideoConverter():
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
 
-            # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
                 print('[Time]'+self.print_time(worktime)+'/'+self.print_time(videotime))
                 # self.print_time(worktime)
                 # self.print_time(videotime)
                 ret, frame = video.retrieve() 
                 if ret:
-                    if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
+                    if(turn % (self.time_F*3) == 0):    #15 
                         predict_images.append(frame)
-                        dataset = tool.gen_predict_dataset(predict_images)  # 圖片轉成dataset
+                        dataset = tool.gen_predict_dataset(predict_images)  # generate dataset
 
-                        # dataset return  1 = 人數夠多  0 = 人數過少
                         if(dataset == 1):
                             work_skip = 120*fps
                             worktime = worktime + 120
                         elif(dataset == 0):
-                            rest_skip = 15*fps
-                        elif(dataset):    # 有可用資料
-                            dataset = np.array(dataset) # 轉numpy type
-                            result = predicter.predict(dataset, lstm_model)  # 預測結果
+                            rest_skip = 15*fps  # skip
+                        elif(dataset):    
+                            dataset = np.array(dataset) # numpy type
+                            result = predicter.predict(dataset, lstm_model)  # result
 
-                            if(self.judge_result(result) == True):  # 有工作狀態->跳x秒 沒有->跳x秒
+                            if(self.judge_result(result) == True):  # judge result
                                 work_skip = 120*fps
                                 worktime = worktime + 120
                             else: 
-                                rest_skip = 30*fps
-                        else:   #　沒資料直接跳過
-                            rest_skip = 15*fps
+                                rest_skip = 30*fps  # skip
+                        else:   
+                            rest_skip = 15*fps  # skip
 
                         predict_images.clear()
                     else:
@@ -161,6 +160,7 @@ class VideoConverter():
         video.release()
         return worktime, videotime
 
+    # test predict video
     def test_predict(self, filename, rest_skiptime, work_skiptime):
         start = time.time()
         turn = 1
@@ -175,10 +175,10 @@ class VideoConverter():
         # lstm_model = predicter.load_lstm_model('./model/lstm_fishman_action.h5')
         lstm_model = predicter.load_lstm_model(join(dirname(__file__), './model/lstm_fishman_action.h5'))
         print("[Time]Time Taken in LSTM Loading: {}".format(time.time() - start))
+       
+        rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip number
 
-        
-        rest_skip, work_skip, worktime, videotime = [0, 0, 0, 0]   # skip代表要跳過的幀數 time代表紀錄時間
-   
+        # read video
         while True:
             ret = video.grab()
             # if frame is read correctly ret is True
@@ -186,33 +186,32 @@ class VideoConverter():
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
 
-            # 每n幀做擷取 每3n幀做擷取並把圖片集拿去預測一次 
             if(turn % self.time_F == 0 and rest_skip == 0 and work_skip == 0): #5
                 print('[Time]'+self.print_time(worktime)+'/'+self.print_time(videotime))
                 # self.print_time(worktime)
                 # self.print_time(videotime)
                 ret, frame = video.retrieve() 
                 if ret:
-                    if(turn % (self.time_F*3) == 0):    #15 表示已經有3張圖了
+                    if(turn % (self.time_F*3) == 0):    #15 
                         predict_images.append(frame)
-                        dataset = tool.gen_predict_dataset(predict_images)  # 圖片轉成dataset
+                        dataset = tool.gen_predict_dataset(predict_images)  # generate dataset
 
                         if(dataset == 1):
                             work_skip = work_skiptime*fps
                             worktime = worktime + work_skiptime
                         elif(dataset == 0):
-                            rest_skip = rest_skiptime*fps
-                        elif(dataset):    # 有可用資料
-                            dataset = np.array(dataset) # 轉numpy type
-                            result = predicter.predict(dataset, lstm_model)  # 預測結果
+                            rest_skip = rest_skiptime*fps   # skip
+                        elif(dataset):    
+                            dataset = np.array(dataset) # numpy type
+                            result = predicter.predict(dataset, lstm_model)  # result
 
-                            if(self.judge_result(result) == True):  # 有工作狀態->跳x秒 沒有->跳x秒
+                            if(self.judge_result(result) == True):  
                                 work_skip = work_skiptime*fps
                                 worktime = worktime + work_skiptime
                             else: 
-                                rest_skip = rest_skiptime*fps
-                        else:   #　沒資料直接跳過
-                            rest_skip = rest_skiptime*fps
+                                rest_skip = rest_skiptime*fps   # skip
+                        else:   
+                            rest_skip = rest_skiptime*fps   # skip
 
                         predict_images.clear()
                     else:

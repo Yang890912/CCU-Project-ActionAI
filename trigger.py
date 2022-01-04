@@ -152,10 +152,12 @@ class GUI():
                     print(FilePath)
                     video = VideoConverter()
                     WorkTime, VideoTime = video.transform_and_predict(FilePath)
+                    if getattr(CurrentThread, "do_run", False):
+                        break
 
                     self.add_time(VideoTime, WorkTime)
                     print('----------------')
-                    print('[VideoTime]', VideoTime)
+                    print('[VideoTime]', VideoTime) 
                     print('[WorkTime]', WorkTime)
                     print('----------------')
                     os.rename(FilePath, self.DirPath + '/(done)' + file)
@@ -268,7 +270,7 @@ class EditWindow(Frame):
     def __init__(self, master = None):
         Frame.__init__(self, master)
         self.master = master
-        self.master.title("Edit Eamil List")
+        self.master.title("Edit Email List")
         self.pack(fill=BOTH, expand=1)
         self.save_button = ttk.Button(
             self.master,

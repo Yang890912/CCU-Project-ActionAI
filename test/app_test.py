@@ -32,7 +32,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.app.err, None)
 
     def test_gui_run_button(self):
-        self.assertEqual(self.app.is_over_work_thres, 1)
+        self.assertEqual(self.app.is_over_work_thres, True)
 
 if __name__ == '__main__':
     unittest.main(argv=['ignored', '-v'], exit=True)
