@@ -3,7 +3,6 @@ import numpy as np
 import time
 import threading
 from os.path import dirname, join
-
 from COCO_model import general_mulitpose_model 
 from action_model import PosePredictor
 
@@ -129,7 +128,7 @@ class VideoConverter():
                             work_skip = 120*fps
                             worktime = worktime + 120
                         elif(dataset == 0):
-                            rest_skip = 15*fps  # skip
+                            rest_skip = 25*fps  # skip
                         elif(dataset):    
                             dataset = np.array(dataset) # numpy type
                             result = predicter.predict(dataset, lstm_model)  # result
@@ -140,7 +139,7 @@ class VideoConverter():
                             else: 
                                 rest_skip = 30*fps  # skip
                         else:   
-                            rest_skip = 15*fps  # skip
+                            rest_skip = 25*fps  # skip
 
                         predict_images.clear()
                     else:
