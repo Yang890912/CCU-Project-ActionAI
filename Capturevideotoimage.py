@@ -127,21 +127,21 @@ class VideoConverter():
 
                         # dataset return  1 = 人數夠多  0 = 人數過少
                         if(dataset == 1):
-                            work_skip = 60*fps
-                            worktime = worktime + 60
+                            work_skip = 120*fps
+                            worktime = worktime + 120
                         elif(dataset == 0):
-                            rest_skip = 30*fps
+                            rest_skip = 15*fps
                         elif(dataset):    # 有可用資料
                             dataset = np.array(dataset) # 轉numpy type
                             result = predicter.predict(dataset, lstm_model)  # 預測結果
 
                             if(self.judge_result(result) == True):  # 有工作狀態->跳x秒 沒有->跳x秒
-                                work_skip = 60*fps
-                                worktime = worktime + 60
+                                work_skip = 120*fps
+                                worktime = worktime + 120
                             else: 
                                 rest_skip = 30*fps
                         else:   #　沒資料直接跳過
-                            rest_skip = 30*fps
+                            rest_skip = 15*fps
 
                         predict_images.clear()
                     else:
