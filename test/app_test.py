@@ -40,16 +40,19 @@ class TestSendMail(unittest.TestCase):
         with open("EmailList.txt", 'r') as file:
             email1 = file.readline().strip("\n")
             email2 = file.readline().strip("\n")
+            file.close()
 
         self.assertEqual(email1, "test1@gmail.com")
         self.assertEqual(email2, "test2@hotmail.com")
 
     def test_gui_send_mail_button(self):
-        Receivers = open("EmailList.txt").readlines()
+        email_list = open("EmailList.txt")
+        Receivers = email_list.readlines()
         for Recv in Receivers:
-            SG = SendGmail(self.Account, self.Password, Recv)
+            SG = SendGmail(self.app.Account, self.app.Password, Recv)
             Failed = SG.send_message()
             self.assertFalse(Failed)
+        email_list.close()
 
 if __name__ == '__main__':
     unittest.main(argv=['ignored', '-v'], exit=True)
