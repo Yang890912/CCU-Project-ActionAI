@@ -9,7 +9,7 @@
 ## Beginners Guide
 - 下載位址最好為**英文路徑**，否則會出現無法預期的錯誤
 - 環境為python 3.6.X
-- python安裝時記得勾選，否則程式`trigger.py`會跑不起來
+- python安裝時記得勾選，否則程式`trigger.py`會跑不起來  
 ![](https://i.imgur.com/7XOH7oO.png)
 
 ### 需要套件
@@ -30,27 +30,27 @@
 - 此專案的**opencv**跟**tensorflow**套件預設使用CPU跑
 如需要以GPU跑可參考CUDA跟cuDNN安裝指南跟opencv編譯指南
 
-- [CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
-- [cuDNN](https://developer.nvidia.com/rdp/cudnn-archive)
-- [CUDA&cuDNN安裝教學](https://medium.com/ching-i/win10-%E5%AE%89%E8%A3%9D-cuda-cudnn-%E6%95%99%E5%AD%B8-c617b3b76deb)
-- [opencv編譯GPU版本教學](https://medium.com/chung-yi/build-opencv-gpu-version-on-windows-10-c37a33437525)
+[CUDA](https://developer.nvidia.com/cuda-toolkit-archive)  
+[cuDNN](https://developer.nvidia.com/rdp/cudnn-archive)  
+[CUDA&cuDNN安裝教學](https://medium.com/ching-i/win10-%E5%AE%89%E8%A3%9D-cuda-cudnn-%E6%95%99%E5%AD%B8-c617b3b76deb)  
+[opencv編譯GPU版本教學](https://medium.com/chung-yi/build-opencv-gpu-version-on-windows-10-c37a33437525)  
 
 ## Pose Prediction(Developer)
-- 我們用的是**OpenPose**開發中的**COCO model**來當作我們的姿勢預測模型，能夠分析出圖片的人並找出關鍵點
-[OpenPose github](https://github.com/CMU-Perceptual-Computing-Lab/openpose)
+- 我們用的是**OpenPose**開發中的**COCO model**來當作我們的姿勢預測模型，能夠分析出圖片的人並找出關鍵點  
+[OpenPose github](https://github.com/CMU-Perceptual-Computing-Lab/openpose)  
 
-**COCO model下載**
-[source](https://drive.google.com/file/d/1lBC7t3QKwu7Udp8t7kUda4K1zSbeW4JY/view?usp=sharing)
-下載完解壓縮後將`pose_deploy_linevec.prototxt`和`pose_iter_440000.caffemodel`丟到`model/coco/`資料夾即可
+**COCO model下載**  
+[source](https://drive.google.com/file/d/1lBC7t3QKwu7Udp8t7kUda4K1zSbeW4JY/view?usp=sharing)  
+下載完解壓縮後將`pose_deploy_linevec.prototxt`和`pose_iter_440000.caffemodel`丟到`model/coco/`資料夾即可  
 
-**COCO model 執行結果**
-想執行 COCO model元件，可以執行`COCO_model.py`，會產生範例圖片跟預測結果，實際人數和期望值人數可以到`test/`資料夾執行 COCO_model_test.py（下面有更詳細解釋）
+**COCO model 執行結果**  
+想執行 COCO model元件，可以執行`COCO_model.py`，會產生範例圖片跟預測結果，實際人數和期望值人數可以到`test/`資料夾執行 COCO_model_test.py（下面有更詳細解釋）  
 ```
 $ python COCO_model.py
 ```
-![](https://i.imgur.com/eMqel5R.png)
+![](https://i.imgur.com/eMqel5R.png)  
 
-## Train Data(Developer)
+## Train Data(Developer)  
 - 有了上述的姿勢預測，我們能透過輸入影片，來擷取幀並預測，產生訓練資料，給之後的**action model**測試
 - 在檔案`Capturevideotoimage.py`有三個函式可做使用，資料生成是用下面第1個函式
 ```
@@ -81,7 +81,7 @@ predict(self, dataset, lstm_model)    # 預測
 ```
 $ python trigger.py
 ```
-執行後產生以下畫面
+執行後產生以下畫面  
 ![](https://i.imgur.com/qWhYQzO.png)
 
 
@@ -94,52 +94,52 @@ $ python trigger.py
 - 下面為顯示目前進度跟所在資料夾位置
 
 ### **Open a Directory**
-產生類似下面介面，直接選取要的資料夾即可
+產生類似下面介面，直接選取要的資料夾即可  
 ![](https://i.imgur.com/mIsgho5.png)
 
-確保有選到正確的資料夾
+確保有選到正確的資料夾  
 ![](https://i.imgur.com/7iL6lIN.png)
 
 
 
 ### **Edit Receiver Email**
-產生以下介面，輸入欲**接收信箱**即可(可多筆)。
+產生以下介面，輸入欲**接收信箱**即可(可多筆)。  
 ![image](https://user-images.githubusercontent.com/90774036/148095083-8b3c77d3-c38d-4055-b238-05b80d240464.png)
 
-然後會在專案資料夾內產生txt檔紀錄
+然後會在專案資料夾內產生txt檔紀錄  
 ![](https://i.imgur.com/ckjCdha.png)
 
 ### **Send Email(請先Login Email)**
-會送出一封提醒郵件(手動測試信箱是否正確)，如下圖
+會送出一封提醒郵件(手動測試信箱是否正確)，如下圖  
 ![](https://i.imgur.com/TA6CyEY.png)
 
 ### **Login Email**
-產生以下介面，這邊輸入email帳密
+產生以下介面，這邊輸入email帳密  
 ![](https://i.imgur.com/g6OImx5.png)
 
-Email 格式有誤會警告
+Email 格式有誤會警告  
 ![](https://i.imgur.com/J2aOTNA.png)
 
 
 ### **Run**
-會顯示目前在分析的檔案，和分析累計時間(完成1個影片才會更新1次)
+會顯示目前在分析的檔案，和分析累計時間(完成1個影片才會更新1次)  
 ![](https://i.imgur.com/WnRWn8Z.png)
 
-命令列會輸出過程
+命令列會輸出過程  
 ![](https://i.imgur.com/RqZIryr.png)
 
-以上的`[Time]work/video`顯示的是進度的時間(範例影片只有10秒故可忽略結果)
+以上的`[Time]work/video`顯示的是進度的時間(範例影片只有10秒故可忽略結果)  
 
-分析過的檔案，檔名會被標記`(done)`，不會重複分析
+分析過的檔案，檔名會被標記`(done)`，不會重複分析  
 ![](https://i.imgur.com/aTDI2SP.png)
 
 ### **Reset**
-目前程式有2種情況會記錄目前的累積時間到`log.txt`並把`Current Work Time`跟`Current Video Time`歸0，此按鈕為手動
-![](https://i.imgur.com/5cALq3k.png)
+目前程式有2種情況會記錄目前的累積時間到`log.txt`並把`Current Work Time`跟`Current Video Time`歸0，此按鈕為手動  
+![](https://i.imgur.com/5cALq3k.png)  
 
 ![](https://i.imgur.com/2cCxnyi.png)
 
-第2種情況是每天的23:59分會自動紀錄
+第2種情況是每天的23:59分會自動紀錄  
 
 ### **注意事項**
 1. 我們採用的分析策略適合長時間影片(20分鐘以上)，如果是低於1分鐘的短片會效果不佳或是沒效果
