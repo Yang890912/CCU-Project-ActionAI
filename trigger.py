@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import threading
 import tkinter as tk
@@ -7,8 +8,13 @@ from SendGmail import SendGmail
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 
 # /mnt/d/my_code/CCU-project-ActionAI
+
+def email_validate(email):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    return re.fullmatch(regex, email)
 
 class GUI():
     def __init__(self):
@@ -18,8 +24,8 @@ class GUI():
         self.root.resizable(False, False)
         self.root.geometry('500x250')
         self.DirPath = os.path.abspath(os.getcwd())
-        self.AWSAccount = str()
-        self.AWSPassword = str()
+        self.Account = str()
+        self.Password = str()
         self.CurrentWorkTime = 0
         self.CurrentVideoTime = 0
         self.WorkTimeStr = StringVar()
@@ -29,7 +35,7 @@ class GUI():
         self.WorkTimeStr.set('Current Work Time = ' + self.SecondToStr(self.CurrentWorkTime))
         self.VideoTimeStr.set('Current Video Time = ' + self.SecondToStr(self.CurrentVideoTime))
         self.CurrentDir.set('Current Directory: ' + self.DirPath)
-        self.CurrentVideo.set('Current Predice Video: ')
+        self.CurrentVideo.set('Current Predict Video: ')
         
         self.PredictThread = threading.Thread(target=self.search_new_file)
         self.open_button = ttk.Button(
@@ -52,9 +58,9 @@ class GUI():
         )
         self.login_button = ttk.Button(
             self.root,
-            text = 'Login AWS Email',
+            text = 'Login Email',
             width=20,
-            command=self.login_AWS
+            command=self._login
         )
         self.send_button = ttk.Button(
             self.root,
@@ -111,7 +117,7 @@ class GUI():
                     self.CurrentVideo.set('Current Predict Video: ' + str(file))
                     print(FilePath)
                     video = VideoConverter()
-                    VideoTime, WorkTime = video.transform_and_predict(FilePath)
+                    WorkTime, VideoTime = video.transform_and_predict(FilePath)
 
                     self.add_time(VideoTime, WorkTime)
                     print('----------------')
@@ -140,18 +146,22 @@ class GUI():
         Receivers = open("EmailList.txt").readlines()
         for Recv in Receivers:
             print("Send to", Recv)
-            SG = SendGmail(self.AWSAccount, self.AWSPassword, Recv)
+            SG = SendGmail(self.Account, self.Password, Recv)
             Failed = SG.send_message()
             print("Failed =", Failed)
 
-    def login_AWS(self):
+    def _login(self):
         self.CreateLoginWindow()
 
     def login(self):
-        self.AWSAccount = self.account.get()
-        self.AWSPassword = self.password.get()
-        print(self.AWSAccount, self.AWSPassword)
-        self.LoginWindow.destroy()
+        self.Account = self.account.get()
+        self.Password = self.password.get()
+
+        if not email_validate(self.Account):
+            messagebox.showerror("Email Error", "Error: The email is invalid! Please try again")
+        else:
+            print(self.Account, self.Password)
+            self.LoginWindow.destroy()
 
     def CreateLoginWindow(self):
         # ref: https://stackoverflow.com/questions/55560127/how-to-close-more-than-one-window-with-a-single-click
@@ -159,7 +169,7 @@ class GUI():
         self.LoginWindow.title("Wellcome to Login")
         self.LoginWindow.geometry('400x300')
         self.account = StringVar()
-        self.account.set('xxxx@gmail.com')
+        self.account.set('your email address')
         self.password = StringVar()
         ttk.Label(self.LoginWindow, text = 'user:', font = ('Arial', 14)).place(x = 50, y = 85)
         ttk.Label(self.LoginWindow, text = 'password:', font = ('Arial', 14)).place(x = 50, y = 115)
