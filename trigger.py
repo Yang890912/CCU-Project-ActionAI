@@ -36,6 +36,7 @@ class GUI():
         self.VideoTimeStr.set('Current Video Time = ' + self.SecondToStr(self.CurrentVideoTime))
         self.CurrentDir.set('Current Directory: ' + self.DirPath)
         self.CurrentVideo.set('Current Predict Video: ')
+        self.err = None
         
         self.PredictThread = threading.Thread(target=self.search_new_file)
         self.open_button = ttk.Button(
@@ -148,6 +149,8 @@ class GUI():
             print("Send to", Recv)
             SG = SendGmail(self.Account, self.Password, Recv)
             Failed = SG.send_message()
+            if Failed:
+                self.err = "failed"
             print("Failed =", Failed)
 
     def _login(self):
