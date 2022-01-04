@@ -2,6 +2,8 @@ import os
 import re
 import time
 import threading
+import schedule
+import datetime
 import tkinter as tk
 from Capturevideotoimage import VideoConverter
 from SendGmail import SendGmail
@@ -22,69 +24,92 @@ class GUI():
         self.root = tk.Tk()
         self.root.title('Overwork Detection')
         self.root.resizable(False, False)
-        self.root.geometry('500x250')
+        self.root.geometry('500x350')
         self.DirPath = os.path.abspath(os.getcwd())
         self.Account = str()
         self.Password = str()
+        self.Running = False
         self.CurrentWorkTime = 0
         self.CurrentVideoTime = 0
         self.WorkTimeStr = StringVar()
         self.VideoTimeStr = StringVar()
         self.CurrentDir = StringVar()
         self.CurrentVideo = StringVar()
+        self.CurrentStatus = StringVar()
         self.WorkTimeStr.set('Current Work Time = ' + self.SecondToStr(self.CurrentWorkTime))
         self.VideoTimeStr.set('Current Video Time = ' + self.SecondToStr(self.CurrentVideoTime))
         self.CurrentDir.set('Current Directory: ' + self.DirPath)
         self.CurrentVideo.set('Current Predict Video: ')
+        self.CurrentStatus.set('Current Status: Not Working')
         self.err = None
         self.work_thres = 28800 # 8 hours
-        self.is_over_work_thres = None
+        self.is_over_work_thres = False
         
-        self.PredictThread = threading.Thread(target=self.search_new_file)
+        self.PredictThread = threading.Thread(target = self.search_new_file)
+        self.ResetEveryDayThread = threading.Thread(target = self.reset_everyday)
+        # schedule.every().minute.at(":30").do(self.reset) # for test
+        schedule.every().day.at("23:59").do(self.reset)
+
         self.open_button = ttk.Button(
             self.root,
             text = 'Open a Directory',
             width = 20,
-            command=self.select_dir
+            command = self.select_dir
         )
         self.run_button = ttk.Button(
             self.root,
             text = 'Run',
             width = 20,
-            command=self.run_predict_thread
+            command = self.run_predict_thread
         )
         self.edit_button = ttk.Button(
             self.root,
             text = 'Edit Receiver Email',
-            width=20,
-            command=self.edit_file
+            width = 20,
+            command = self.edit_file
         )
         self.login_button = ttk.Button(
             self.root,
             text = 'Login Email',
-            width=20,
-            command=self._login
+            width = 20,
+            command = self._login
         )
         self.send_button = ttk.Button(
             self.root,
             text = 'Send Email',
+            width = 20,
+            command = self.send_email
+        )
+        self.stop_button = ttk.Button(
+            self.root,
+            text = 'Stop',
+            width = 20,
+            command = self.stop_predict
+        )
+        self.reset_button = ttk.Button(
+            self.root,
+            text = 'Reset',
             width=20,
-            command=self.send_email
+            command = self.reset
         )
 
         self.WorkTimeText = ttk.Label(self.root, textvariable = self.WorkTimeStr)
         self.VideoTimeText = ttk.Label(self.root, textvariable = self.VideoTimeStr)
         self.CurrentDirText = ttk.Label(self.root, textvariable = self.CurrentDir)
         self.CurrentVideoText = ttk.Label(self.root, textvariable = self.CurrentVideo)
+        self.CurrentStatusText = ttk.Label(self.root, textvariable = self.CurrentStatus)
         self.open_button.pack(expand = False)
         self.edit_button.pack(expand = False)
         self.send_button.pack(expand = False)
         self.login_button.pack(expand = False)
         self.run_button.pack(expand = False)
+        self.stop_button.pack(expand = False)
+        self.reset_button.pack(expand = False)
         self.WorkTimeText.pack(expand = False)
         self.VideoTimeText.pack(expand = False)
         self.CurrentDirText.pack(expand = False)
         self.CurrentVideoText.pack(expand = False)
+        self.CurrentStatusText.pack(expand = False)
 
     def edit_file(self):
         top = Tk()
@@ -111,6 +136,8 @@ class GUI():
 
     def search_new_file(self):
         print('Starting to load Video ...')
+        self.Running = True
+        self.CurrentStatus.set('Current Status: Running')
         CurrentThread = threading.currentThread()
 
         # write log 
@@ -119,7 +146,7 @@ class GUI():
         while getattr(CurrentThread, "do_run", True):
             Files = os.listdir(self.DirPath)
             for file in Files:
-                if (not file.startswith('(done)')) and file.endswith('.mp4'):
+                if self.Running and (not file.startswith('(done)')) and file.endswith('.mp4'):
                     FilePath = self.DirPath + '/' + file
                     self.CurrentVideo.set('Current Predict Video: ' + str(file))
                     print(FilePath)
@@ -139,13 +166,10 @@ class GUI():
                         print('Exceeds 8 hours of work')
                         print('Send mail to boss!')
                         print('----------------')
-                        log_file.write("'%s' video has exceeds 8 hours of working!!!(exceeded work time(seconds): %d)\n" % (str(file), self.CurrentWorkTime))
+                        log_file.write("'%s' video has exceeds 8 hours of working!!!(exceeded work time(seconds): %d)\n" % (str(file), self.CurrentWorkTime - self.work_thres))
                         
-                        self.is_over_work_thres = 1
                         self.send_email()
-                        self.CurrentVideoTime = 0
-                        self.CurrentWorkTime = 0
-
+                        self.is_over_work_thres = True
 
             time.sleep(1)
 
@@ -163,6 +187,33 @@ class GUI():
     def run_predict_thread(self):
         if not self.PredictThread.is_alive():
             self.PredictThread.start()
+        else:
+            self.continue_predict()
+
+    def reset(self):
+        log_file = open("log.txt", "a")
+        print(datetime.date.today(), 'Work Time =', self.SecondToStr(self.CurrentWorkTime), file = log_file)
+        log_file.close()
+        print('Reset Time')
+        self.is_over_work_thres = False
+        self.CurrentVideoTime = 0
+        self.CurrentWorkTime = 0
+        self.WorkTimeStr.set('Current Work Time = ' + self.SecondToStr(0))
+        self.VideoTimeStr.set('Current Video Time = ' + self.SecondToStr(0))
+
+    def reset_everyday(self):
+        CurrentThread = threading.currentThread()
+        while getattr(CurrentThread, "do_run", True):
+            schedule.run_pending()
+            time.sleep(1)
+
+    def stop_predict(self):
+        self.CurrentStatus.set('Current Status: Not Working')
+        self.Running = False
+
+    def continue_predict(self):
+        self.CurrentStatus.set('Current Status: Running')
+        self.Running = True
 
     def send_email(self):
         Receivers = open("EmailList.txt").readlines()
@@ -205,8 +256,10 @@ class GUI():
         print('Starting GUI ... ')
 
         # run the application
+        self.ResetEveryDayThread.start()
         self.root.mainloop()
         self.PredictThread.do_run = False
+        self.ResetEveryDayThread.do_run = False
         print('Finish')
 
 
