@@ -30,10 +30,10 @@
 - 此專案的**opencv**跟**tensorflow**套件預設使用CPU跑
 如需要以GPU跑可參考CUDA跟cuDNN安裝指南跟opencv編譯指南
 
-[CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
-[cuDNN](https://developer.nvidia.com/rdp/cudnn-archive)
-[CUDA&cuDNN安裝教學](https://medium.com/ching-i/win10-%E5%AE%89%E8%A3%9D-cuda-cudnn-%E6%95%99%E5%AD%B8-c617b3b76deb)
-[opencv編譯GPU版本教學](https://medium.com/chung-yi/build-opencv-gpu-version-on-windows-10-c37a33437525)
+- [CUDA](https://developer.nvidia.com/cuda-toolkit-archive)
+- [cuDNN](https://developer.nvidia.com/rdp/cudnn-archive)
+- [CUDA&cuDNN安裝教學](https://medium.com/ching-i/win10-%E5%AE%89%E8%A3%9D-cuda-cudnn-%E6%95%99%E5%AD%B8-c617b3b76deb)
+- [opencv編譯GPU版本教學](https://medium.com/chung-yi/build-opencv-gpu-version-on-windows-10-c37a33437525)
 
 ## Pose Prediction(Developer)
 - 我們用的是**OpenPose**開發中的**COCO model**來當作我們的姿勢預測模型，能夠分析出圖片的人並找出關鍵點
@@ -104,7 +104,7 @@ $ python trigger.py
 
 ### **Edit Receiver Email**
 產生以下介面，輸入欲**接收信箱**即可(可多筆)。
-![](https://i.imgur.com/TLASwO4.png)
+![image](https://user-images.githubusercontent.com/90774036/148095083-8b3c77d3-c38d-4055-b238-05b80d240464.png)
 
 然後會在專案資料夾內產生txt檔紀錄
 ![](https://i.imgur.com/ckjCdha.png)
