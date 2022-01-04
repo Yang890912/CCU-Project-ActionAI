@@ -112,6 +112,10 @@ class GUI():
     def search_new_file(self):
         print('Starting to load Video ...')
         CurrentThread = threading.currentThread()
+
+        # write log 
+        log_file = open("log.txt", "a")
+
         while getattr(CurrentThread, "do_run", True):
             Files = os.listdir(self.DirPath)
             for file in Files:
@@ -135,6 +139,8 @@ class GUI():
                         print('Exceeds 8 hours of work')
                         print('Send mail to boss!')
                         print('----------------')
+                        log_file.write("'%s' video has exceeds 8 hours of working!!!(exceeded work time(seconds): %d)\n" % (str(file), self.CurrentWorkTime))
+                        
                         self.is_over_work_thres = 1
                         self.send_email()
                         self.CurrentVideoTime = 0
@@ -142,6 +148,8 @@ class GUI():
 
 
             time.sleep(1)
+
+        log_file.close()
 
     def select_dir(self):
         DirName = filedialog.askdirectory(
