@@ -104,7 +104,7 @@ $ python trigger.py
 
 ### **Edit Receiver Email**
 產生以下介面，輸入欲**接收信箱**即可(可多筆)。  
-![image](https://user-images.githubusercontent.com/90774036/148155326-108660be-b2fa-46d0-a062-8c9501a481ac.png)
+![image](https://user-images.githubusercontent.com/90774036/148155420-7a9f240f-2f8c-496d-80f6-94a004d991eb.png)
 
 然後會在專案資料夾內產生txt檔紀錄  
 ![](https://i.imgur.com/ckjCdha.png)
